@@ -38,7 +38,7 @@ SubscribePrivate = function(){
 
 		if (p.vsaddress)
 			self.address.v =  p.vsaddress
-			
+
 	}
 
 	self.type = 'subscribePrivate'
@@ -86,7 +86,7 @@ Subscribe = function(){
 
 		if (p.vsaddress)
 			self.address.v =  p.vsaddress
-			
+
 	}
 
 	self.type = 'subscribe'
@@ -134,7 +134,7 @@ Unsubscribe = function(){
 
 		if (p.vsaddress)
 			self.address.v =  p.vsaddress
-			
+
 	}
 
 	self.type = 'unsubscribe'
@@ -182,7 +182,7 @@ Blocking = function(){
 
 		if (p.vsaddress)
 			self.address.v =  p.vsaddress
-			
+
 	}
 
 	self.type = 'blocking'
@@ -230,7 +230,7 @@ Unblocking = function(){
 
 		if (p.vsaddress)
 			self.address.v =  p.vsaddress
-			
+
 	}
 
 	self.type = 'unblocking'
@@ -296,7 +296,7 @@ Comment = function(txid){
 	};
 
 	self.images = {
-		
+
 		set : function(images){
 
 			if(!images){
@@ -421,7 +421,7 @@ Comment = function(txid){
 	self.on = {}
 	self.off = function(e){
 		delete self.on[e]
-	}	
+	}
 
 	self.validation = function(){
 
@@ -440,7 +440,7 @@ Comment = function(txid){
 		return null;
 	}
 
-	
+
 	self.checkloaded = function(){
 		var notloaded = _.find(self.images.v, function(i){
 			return i.indexOf('data:image') > -1
@@ -464,25 +464,25 @@ Comment = function(txid){
 					app.imageUploader.upload({
 						base64: image,
 					}).then( url => {
-	
+
 						self.images.v[index] = url
-	
+
 						p.success();
-	
+
 					}).catch(err => {
-	
+
 						p.success();
-	
+
 					})
 
-					
+
 				}
 				else
 				{
 					p.success();
 				}
 
-				
+
 
 			},
 
@@ -502,7 +502,7 @@ Comment = function(txid){
 		if(!self.delete){
 
 			s += (JSON.stringify({
-				
+
 				message : encodeURIComponent(self.message.v),
 				url : encodeURIComponent(self.url.v),
 				images : _.map(self.images.v, function(i){
@@ -510,9 +510,9 @@ Comment = function(txid){
 				}),
 
 			}))
-			
+
 		}
-		
+
 		s += (self.parentid || "") + (self.answerid || "")
 
 
@@ -557,11 +557,11 @@ Comment = function(txid){
 			r.amount = self.amount.v;
 
 		}
-	
+
 		return r
 
 
-		
+
 
 	}
 
@@ -606,7 +606,7 @@ Comment = function(txid){
 				return 'commentEdit'
 			}
 
-			
+
 		}
 
 		return self.type
@@ -677,7 +677,7 @@ Comment = function(txid){
 				vsaddress : self.address.v
 			}
 		}
-		
+
 	}
 
 	self.import = function(p){
@@ -855,7 +855,7 @@ ModFlag = function(){
 		v : ''
 	};
 
-	
+
 
 	self.validation = function(){
 		if(!self.s2.v){
@@ -896,7 +896,7 @@ ModFlag = function(){
 
 		if (p.i1)
 			self.i1.v = p.i1;
-			
+
 	}
 
 	self.type = 'modFlag'
@@ -905,7 +905,7 @@ ModFlag = function(){
 
 ContentBoost = function(txid){
 	var self = this;
-	
+
 	self.txid = txid;
 
 	self.amount = {
@@ -974,7 +974,7 @@ Share = function(lang){
 	var self = this;
 
 	self.clear = function(){
-		
+
 		self.message.set()
 		self.images.set()
 		self.tags.set()
@@ -1003,7 +1003,7 @@ Share = function(lang){
 			_.each(self.on.change || {}, function(f){
 				f('repost', this.v)
 			})
-			
+
 
 		},
 		v : '',
@@ -1025,14 +1025,14 @@ Share = function(lang){
 			_.each(self.on.change || {}, function(f){
 				f('caption', this.v)
 			})
-			
+
 
 		},
 		v : '',
 
 		drag : false
 	};
-	
+
 	self.message = {
 		set : function(_v){
 
@@ -1043,7 +1043,7 @@ Share = function(lang){
 			{
 				this.v = _v
 			}
-			
+
 			_.each(self.on.change || {}, function(f){
 				f('message', this.v)
 			})
@@ -1064,7 +1064,7 @@ Share = function(lang){
 			{
 				this.v = _v
 			}
-			
+
 			_.each(self.on.change || {}, function(f){
 				f('language', this.v)
 			})
@@ -1086,7 +1086,7 @@ Share = function(lang){
 			{
 				this.v = _v
 			}
-			
+
 			_.each(self.on.change || {}, function(f){
 				f('poll', this.v)
 			})
@@ -1126,7 +1126,7 @@ Share = function(lang){
 		}
 
 		return 'post'
-	} 
+	}
 
 	self.tags = {
 		have : function(tag){
@@ -1205,10 +1205,10 @@ Share = function(lang){
 			})
 		},
 		v : []
-	}	
+	}
 
 	self.images = {
-		
+
 		set : function(images){
 
 			if(!images){
@@ -1312,7 +1312,7 @@ Share = function(lang){
 		image : '',
 		f : '0'
 	}
-	
+
 
 	self.checkloaded = function(){
 		var notloaded = _.find(self.images.v, function(i){
@@ -1348,14 +1348,14 @@ Share = function(lang){
 
 						p.success();
 					})
-					
+
 				}
 				else
 				{
 					p.success();
 				}
 
-				
+
 
 			},
 
@@ -1391,7 +1391,7 @@ Share = function(lang){
 			if (l < 30 && !self.images.v.length){
 				return 'url'
 			}
-			
+
 		}
 
 		if(!self.tags.v.length && !self.repost.v){
@@ -1399,19 +1399,19 @@ Share = function(lang){
 		}
 
 
-		if(self.hasexchangetag() && 
+		if(self.hasexchangetag() &&
 		(
-			self.tags.v.length > 1 || 
-			self.repost.v || 
-			self.itisvideo() || 
-			(self.url.v && self.url.v.length) 
-			
+			self.tags.v.length > 1 ||
+			self.repost.v ||
+			self.itisvideo() ||
+			(self.url.v && self.url.v.length)
+
 			)){
 
 			return 'pkoin_commerce_tag'
 		}
 
-	
+
 		return false
 	}
 
@@ -1424,23 +1424,23 @@ Share = function(lang){
 		if (articleversion2){
 			textvalue = JSON.stringify(textvalue) //  Base64Helper.encode(JSON.stringify(textvalue))
 		}
-		
-		return encodeURIComponent(self.url.v) 
-		
-		+ encodeURIComponent(self.caption.v) 
+
+		return encodeURIComponent(self.url.v)
+
+		+ encodeURIComponent(self.caption.v)
 		+ (articleversion2 ? textvalue : encodeURIComponent(textvalue))
 
 		+ _.map(self.tags.v, function(t){ return encodeURIComponent(t) }).join(',')
 		+ self.images.v.join(',')
 
 		+ (self.aliasid || "")
-		+ (self.repost.v || "")		
+		+ (self.repost.v || "")
 	}
 
 	self.shash = function(){
 		return bitcoin.crypto.sha256(self.serialize() + (self.repost.v || "") ).toString('hex')
 	}
-	
+
 	self.itisvideo = function(){
 
 		if(self.settings.v == 'a') return
@@ -1493,7 +1493,7 @@ Share = function(lang){
 				txidEdit : self.aliasid || "",
 				txidRepost : self.repost.v || "",
 				poll : self.poll.v || {}
-			} 
+			}
 		}
 
 		return {
@@ -1513,12 +1513,12 @@ Share = function(lang){
 	self.import = function(v){
 
 		if (v.s){
-			
+
 			try{
 				self.settings = v.s
 			}
 			catch(e){
-				
+
 			}
 		}
 		else
@@ -1541,7 +1541,7 @@ Share = function(lang){
 		self.poll.set(v.p || v.poll || {})
 
 		if (v.txidEdit) self.aliasid = v.txidEdit
-		
+
 	}
 
 	self.alias = function(txid){
@@ -1563,7 +1563,7 @@ Share = function(lang){
 		if(self.itisvideo()) return 'video'
 		if(self.itisarticle()) return 'article'
 
-		return self.type	
+		return self.type
 	}
 
 	self.typeop = function(platform){
@@ -1640,7 +1640,7 @@ UserInfo = function(){
 				{
 					this.v.push(_v)
 				}
-				
+
 			}
 
 			if (self.on.change)
@@ -1668,7 +1668,7 @@ UserInfo = function(){
 				{
 					this.v.push(_v)
 				}
-				
+
 			}
 
 			if (self.on.change)
@@ -1687,14 +1687,14 @@ UserInfo = function(){
 			{
 				this.v = _v
 			}
-			
+
 
 			if (self.on.change)
 				self.on.change('image', this.v)
 		},
 		v : ''
 	};
-	
+
 	self.name = {
 		set : function(_v){
 
@@ -1705,7 +1705,7 @@ UserInfo = function(){
 			{
 				this.v = _v
 			}
-			
+
 
 			if (self.on.change)
 				self.on.change('name', this.v)
@@ -1723,7 +1723,7 @@ UserInfo = function(){
 			{
 				this.v = _v
 			}
-			
+
 
 			if (self.on.change)
 				self.on.change('ref', this.v)
@@ -1741,7 +1741,7 @@ UserInfo = function(){
 			{
 				this.v = _v
 			}
-			
+
 
 			if (self.on.change)
 				self.on.change('language', this.v)
@@ -1759,7 +1759,7 @@ UserInfo = function(){
 			{
 				this.v = _v
 			}
-			
+
 
 			if (self.on.change)
 				self.on.change('about', this.v)
@@ -1777,7 +1777,7 @@ UserInfo = function(){
 			{
 				this.v = _v
 			}
-			
+
 
 			if (self.on.change)
 				self.on.change('site', this.v)
@@ -1840,7 +1840,7 @@ UserInfo = function(){
 
 		if (hash.indexOf('pocketnet') > -1) return 'pocketnet'
 		if (hash.indexOf('bastyon') > -1) return 'bastyon'
-		
+
 		return false
 
 	}
@@ -1851,14 +1851,14 @@ UserInfo = function(){
 		 + encodeURIComponent(self.site.v)
 		 + self.language.v
 		 + encodeURIComponent(self.about.v)
-		 + self.image.v + JSON.stringify(self.addresses.v) 
+		 + self.image.v + JSON.stringify(self.addresses.v)
 		 + self.ref.v
 		 + self.keys.v.join(',')
 	}
 
 	self.alias = function(txid){
 		var userInfo = new pUserInfo();
-		
+
 
 			userInfo._import(self.export())
 
@@ -1874,12 +1874,12 @@ UserInfo = function(){
 				name : self.name.v,
 				about : self.about.v,
 				site : self.site.v,
-				language : self.language.v,				
+				language : self.language.v,
 				image : self.image.v,
 				addresses : JSON.stringify(self.addresses.v || []),
 				ref : self.ref.v,
 				keys : self.keys.v.join(',')
-			} 
+			}
 		}
 
 		return {
@@ -1897,15 +1897,15 @@ UserInfo = function(){
 	self.import = function(v){
 		self.name.set(v.c || v.name)
 		self.language.set(v.l || v.language)
-		self.about.set(v.a || v.about)	
-		self.site.set(v.s || v.site)	
+		self.about.set(v.a || v.about)
+		self.site.set(v.s || v.site)
 		self.image.set(v.i || v.image)
 		self.addresses.set( JSON.parse(v.b || v.addresses || "[]"))
 		self.ref.set(v.r || v.ref)
 		self.keys.set((v.k || v.keys || '').split(','))
 	}
 
-	
+
 
 	self.type = 'userInfo'
 
@@ -1936,7 +1936,7 @@ pUserInfo = function(){
 	self.address = ''
 
 	self.rc = 0;
-	
+
 
 
 	self._import = function(v){
@@ -1972,16 +1972,16 @@ pUserInfo = function(){
 		if (v.txid)
 			self.txid = v.txid;
 
-			
+
 		try{
 			self.addresses = JSON.parse(v.b || v.addresses || "[]")
 		}
 		catch (e){
-			
+
 		}
 
 		if(typeof v.trial != 'undefined') self.trial = v.trial
-		
+
 
 		if (v.adr || v.address)
 			self.address = v.adr || v.address
@@ -1990,7 +1990,7 @@ pUserInfo = function(){
 
 		self.dev = v.dev;
 
-
+		self.id = v.id;
 	}
 
 	self.export = function(){
@@ -2026,7 +2026,7 @@ pUserInfo = function(){
 				body : self.about,
 				preview : self.about
 			}
-		
+
 		}
 
 		return s
@@ -2042,7 +2042,7 @@ pUserInfo = function(){
 		if(!key) key = 'subscribes'
 
 		return _.find(self[key], function(o){
-			return (o.adddress || o.address || o) == address 
+			return (o.adddress || o.address || o) == address
 		})
 	}
 
@@ -2052,7 +2052,7 @@ pUserInfo = function(){
 
 		self[key] || (self[key] = [])
 
-		self[key].push(obj)	
+		self[key].push(obj)
 
 		if (key === 'subscribers'){
 
@@ -2065,7 +2065,7 @@ pUserInfo = function(){
 
 			self['subscribes_count'] || (self['subscribes_count'] = 0);
 			self['subscribes_count']++;
-			
+
 		}
 
 	}
@@ -2087,11 +2087,11 @@ pUserInfo = function(){
 
 			self['subscribes_count'] || (self['subscribes_count'] = 1);
 			self['subscribes_count']--;
-			
+
 		}
 
 	}
-	
+
 
 	self.type = 'userInfo'
 
@@ -2144,7 +2144,7 @@ pShare = function(){
 
 		return !self.message && !self.caption && (self.tags.length == 0) && (self.images.length == 0) && !self.url
 	}
-	
+
 	self.findComment = function(id){
 		return _.find(self.comments, function(c){
 			return c.txid == id
@@ -2155,7 +2155,7 @@ pShare = function(){
 
 		if(self.settings.v == 'a') return
 
-		if(!self.url) return 
+		if(!self.url) return
 
 		var meta = parseVideo(self.url)
 
@@ -2175,7 +2175,7 @@ pShare = function(){
 		if (v.s){
 
 			try{
-				self.settings = v.s 
+				self.settings = v.s
 			}
 			catch(e){
 
@@ -2188,10 +2188,10 @@ pShare = function(){
 			}
 		}
 
-		
+
 		if(v.i && !_.isArray(v.i)) v.i = [v.i]
 		if(v.t && !_.isArray(v.t)) v.t = [v.t]
-		
+
 		var textvalue = v.m || v.message || ""
 
 		var articleversion2 = self.settings.v == 'a' && self.settings.version && self.settings.version >= 2
@@ -2213,18 +2213,18 @@ pShare = function(){
 			self.tags = v.t || v.tags || []
 			self.url = v.u || v.url || '';
 			self.poll = v.p || v.poll || {}
-			
+
 		}
 		else
-		{	
+		{
 			self.url = clearStringXss(decodeURIComponent(v.u || v.url || ''));
 			self.message = articleversion2 ? textvalue : (decodeURIComponent((textvalue).replace(/\+/g, " ")))
 			self.caption = (decodeURIComponent((v.c || v.caption || "").replace(/\+/g, " ")))
 
-			self.tags = _.map(v.t || v.tags || [], function(t){ 
+			self.tags = _.map(v.t || v.tags || [], function(t){
 				return clearStringXss(clearTagString(decodeURIComponent(t)))
 			})
-			
+
 			self.poll = v.p || v.poll || {}
 
 		}
@@ -2248,7 +2248,7 @@ pShare = function(){
 			self.id = v.id;
 
 		if (v.txidEdit)
-			self.txidEdit = v.txidEdit;	
+			self.txidEdit = v.txidEdit;
 
 		self.temp = v.temp || null;
 
@@ -2261,7 +2261,7 @@ pShare = function(){
 		if(v.reposted)
 			self.reposted = v.reposted
 
-		
+
 		if(v.lastComment)
 			self.lastComment = v.lastComment
 
@@ -2271,7 +2271,7 @@ pShare = function(){
 	self.export = function(){
 
 		var v = {}
-		
+
 		v.m = encodeURIComponent(self.message)
 		v.c = encodeURIComponent(self.caption)
 		v.u = encodeURIComponent(self.url)
@@ -2310,7 +2310,7 @@ pShare = function(){
 				body : self.renders.text(),
 				preview : trimHtml(self.renders.text(), 130).replace(/ &hellip;/g, '...').replace(/&hellip;/g, '...')
 			}
-		
+
 		}
 
 		if (self.url){
@@ -2359,19 +2359,19 @@ pShare = function(){
 		},
 
 		messagec : function(){
-		
+
 			var m = self.caption || trimrn(self.message)
 
 			return m
 		},
 
 		text : function(nm){
-			if(!nm) nm = self.renders.messagec() 
+			if(!nm) nm = self.renders.messagec()
 
 			nm = (trimrn(filterXSS(nm, {
 				whiteList: [],
 				stripIgnoreTag: true,
-			})));	
+			})));
 
 			return nm
 		},
@@ -2391,7 +2391,7 @@ pShare = function(){
 				nm = nl2br(trimrn(findAndReplaceLink(filterXSS(nm, {
 					whiteList: [],
 					stripIgnoreTag: true,
-				}))));	
+				}))));
 
 			}
 			else
@@ -2461,7 +2461,7 @@ pShare = function(){
 		upvoteShare.value.set(value);
 		upvoteShare.address.set(self.address || '')
 
-		self.myVal = Number(value);		
+		self.myVal = Number(value);
 
 		return upvoteShare;
 	}
@@ -2555,7 +2555,7 @@ pComment = function(){
 
 		if (v.msgparsed){
 
-			try {	
+			try {
 				self.url = clearStringXss(decodeURIComponent(v.msgparsed.url || ""));
 				self.message = clearStringXss(decodeURIComponent((v.msgparsed.message || "").replace(/\+/g, " ")).replace(/\n{2,}/g, '\n\n'))
 				self.images = _.map(v.msgparsed.images || [], function(i){
@@ -2568,9 +2568,9 @@ pComment = function(){
 				console.log("ERROR", e, v.msgparsed)
 			}
 
-			
-		}			
-		
+
+		}
+
 		self.txid = v.postid;
 		self.answerid = v.answerid;
 		self.parentid = v.parentid;
@@ -2590,7 +2590,7 @@ pComment = function(){
 	}
 
 	self.import = function(v){
-			
+
 		if (v.msg)
 			v.msgparsed = JSON.parse(v.msg)
 
@@ -2643,7 +2643,7 @@ pComment = function(){
 		c.answerid = self.answerid
 
 		c.delete = true
-		
+
 
 		return c
 
@@ -2655,7 +2655,7 @@ pComment = function(){
 
 		self.timeUpd = new Date()
 		self.timeUpd.setTime(tu * 1000);
-	}	
+	}
 
 	self.social = function(app){
 
@@ -2674,7 +2674,7 @@ pComment = function(){
 				body : self.renders.text(),
 				preview : trimHtml(self.renders.text(), 130).replace(/ &hellip;/g, '...').replace(/&hellip;/g, '...')
 			}
-		
+
 		}
 
 		if(!s.image) s.image = self.images[0]
@@ -2693,8 +2693,8 @@ pComment = function(){
 			}))
 
 			return l
-		},	
-		
+		},
+
 		preview : function(){
 			var l = filterXSS(self.message, {
 				whiteList: [],
@@ -2726,7 +2726,7 @@ pComment = function(){
 
 Img = function(p){
 	if(!p) p = {};
- 
+
 	var self = this;
 
 		self.type = p.type;
@@ -2734,7 +2734,7 @@ Img = function(p){
 		self.app = p.app;
 		self.refId = p.refId;
 
-	return self;	
+	return self;
 }
 
 kits = {
@@ -2769,7 +2769,7 @@ Remove = function(lang){
 	var self = this;
 
 	self.clear = function(){
-		
+
 		self.txidEdit.set()
 		self.s.set()
 
@@ -2778,7 +2778,7 @@ Remove = function(lang){
 	self.ustate = function(){
 
 		return self.type;
-	} 
+	}
 
 	self.on = {
 		change : {}
@@ -2806,7 +2806,7 @@ Remove = function(lang){
 	self.shash = function(){
 		return bitcoin.crypto.sha256(self.serialize()).toString('hex')
 	}
-	
+
 
 	self.export = function(){
 
@@ -2818,9 +2818,9 @@ Remove = function(lang){
 
 	self.import = function(v){
 
-		self.txidEdit.set(v.txidEdit || ""); 
+		self.txidEdit.set(v.txidEdit || "");
 
-		
+
 	}
 
 	self.alias = function(txid){
@@ -2837,7 +2837,7 @@ Remove = function(lang){
 
 	self.optstype = function(){
 
-		return self.type	
+		return self.type
 	}
 
 
@@ -2874,18 +2874,18 @@ pRemove = function(){
 	self._import = function(v, notdecode){
 
 		if (v.txidEdit)
-			self.txidEdit = v.txidEdit;	
+			self.txidEdit = v.txidEdit;
 
-		
+
 		if (v.s)
-			self.s = v.s;	
+			self.s = v.s;
 
 	}
 
 	self.export = function(){
 
 		var v = {}
-	
+
 		v.txidEdit = self.txidEdit;
 
 		if (v.s){
@@ -2908,7 +2908,7 @@ pRemove = function(){
 
 		c.txidEdit = self.txidEdit;
 		c.c = self.c;
-		
+
 
 		return c
 
@@ -2969,7 +2969,7 @@ Settings = function(){
 	self.ustate = function(){
 
 		return self.type;
-	} 
+	}
 
 	self.on = {
 		change : {}
@@ -3007,13 +3007,13 @@ Settings = function(){
 			d: JSON.stringify({
 				pin: self.pin.v || "",
 			})
-		} 
+		}
 
 	}
 
 	self.import = function(v){
 
-		self.pin.set(v.pin || ""); 
+		self.pin.set(v.pin || "");
 
 
 	}
@@ -3021,7 +3021,7 @@ Settings = function(){
 
 	self.optstype = function(){
 
-		return self.type	
+		return self.type
 	}
 
 
