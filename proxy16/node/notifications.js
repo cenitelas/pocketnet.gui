@@ -6,16 +6,21 @@ class Notifications{
         this.firebase = firebase;
         this.nodeManager = nodeManager;
         this.lastBlock = "";
+        this.workerEnable = false;
+        this.queue = []
         // this.test()
         return this;
     }
 
-    async sendBlock(block, reRequest){
-        try {
-            if(this.lastBlock!==block.height) {
-                const node = this.nodeManager.selectProbabilityByVersion();
-                // const notifications = await this.proxy.nodeControl.request.getNotifications([block.height])
+    async worker(){
+        this.workerEnable = true
+        let block = this.queue.shift();
+        while (block){
+            try {
+                const node = this.nodeManager.selectProbabilityByVersion(block.nodeId);
+
                 if (node) {
+                    console.log("Send push: ", block.nodeId, " | ", node.id, " | ", block.height)
                     const notifications = await node.rpcs("getnotifications", [block.height])
                     for (const type of Object.keys(notifications)) {
                         if (type === 'pocketnetteam') {
@@ -31,22 +36,39 @@ class Notifications{
                         }
                     }
                 }
-                this.lastBlock = block.height
-            }
-        }catch (e){
-            if(!reRequest){
-                setTimeout(()=>{
-                    this.sendBlock(block, true)
-                }, 5000)
-            }else {
-                console.log('Error:  ', e)
+                block = this.queue.shift();
+            }catch (e) {
+                if(!block.reRequest){
+                    block.reRequest = true;
+                    this.queue.push(block)
+                }else{
+                    block = this.queue.shift();
+                    console.log("Error: ",e)
+                }
             }
         }
+        this.workerEnable = false
+    }
 
+    startWorker(){
+        if(!this.workerEnable)
+            this.worker()
+    }
+
+    async sendBlock(block, nodeId){
+        if(!this.queue.some(el=>el.height ===block.height)) {
+           const notification = {
+               height: block.height,
+               nodeId: nodeId,
+               reRequest: false
+           }
+           this.queue.push(notification)
+           this.startWorker()
+        }
     }
     
     destroy(){
-        
+        this.queue = [];
     }
 
     async test(){

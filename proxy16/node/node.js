@@ -212,7 +212,7 @@ var Node = function(options, manager){
                 timedifference(block.time)
 
                 if(block?.msg === 'new block') {
-                    manager.notifications.sendBlock(block)
+                    manager.notifications.sendBlock(block, self.id)
                 }
             }
 
