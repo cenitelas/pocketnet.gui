@@ -99,6 +99,8 @@ var Wss = function(node, service){
                 authorize(user)
 
                 emit('open')
+
+                console.log("opened", node.host, f.numfromreleasestring(node.version), node.version)
                 
             };
 
@@ -130,11 +132,15 @@ var Wss = function(node, service){
                     return
                 }
 
+                console.log('data.msg', data.msg)
+
                 if (data.msg == 'new block' && service){
                 
                     emit('block', data)
 
                     node.addblock(data)
+
+                    node.notification(data)
 
                     //blockhash
             

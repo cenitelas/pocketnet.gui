@@ -555,8 +555,8 @@ var Firebase = function(p){
 
     self.sendToAll = function(data){
         var users = getAllUsers()
-        if(users?.length)
-            self.send({data, users})
+
+        if (users?.length) self.send({data, users})
     }
 
     self.init = function(p){

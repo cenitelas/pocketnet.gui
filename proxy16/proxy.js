@@ -347,7 +347,9 @@ var Proxy = function (settings, manage, test, logger, reverseproxy) {
 		},
 
 		sendBlock: function (block){
-			return notifications.sendBlock(block);
+			return Promise.reject("dep")
+			//temp
+			//return notifications.sendBlock(block);
 		},
 
 		destroy: function () {

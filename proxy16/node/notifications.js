@@ -1,3 +1,6 @@
+var f = require('../functions');
+
+
 class Notifications{
     constructor() {}
     
@@ -8,45 +11,65 @@ class Notifications{
         this.lastBlock = "";
         this.workerEnable = false;
         this.queue = []
+        this.height = 0
         // this.test()
         return this;
     }
 
     async worker(){
-        this.workerEnable = true
-        let block = this.queue.shift();
-        while (block){
-            try {
-                const node = this.nodeManager.selectProbabilityByVersion(block.nodeId);
 
-                if (node) {
-                    console.log("Send push: ", block.nodeId, " | ", node.id, " | ", block.height)
-                    const notifications = await node.rpcs("getnotifications", [block.height])
-                    for (const type of Object.keys(notifications)) {
-                        if (type === 'pocketnetteam') {
-                            for (const notification of notifications?.[type] || []) {
-                                await this.firebase.sendToAll(notification)
-                            }
-                        } else {
-                            for (const address of Object.keys(notifications?.[type] || [])) {
-                                for (const notification of notifications?.[type]?.[address] || []) {
-                                    await this.firebase.sendToDevices(notification, null, address)
-                                }
+        this.workerEnable = true
+
+        let item = this.queue.shift();
+
+        while (item){
+            try {
+                const node = item.node
+
+                console.log("Send push: ", node.id, " | ", item.height)
+
+                const notifications = await node.rpcs("getnotifications", [item.height])
+
+                console.log('has notifications')
+
+                if(!this.firebase.inited) throw new Error('Firebase not inited')
+
+                for (const type of Object.keys(notifications)) {
+                    if (type === 'pocketnetteam') {
+
+                        for (const notification of notifications?.[type] || []) {
+                            await this.firebase.sendToAll(notification)
+                        }
+
+                    } else {
+                        for (const address of Object.keys(notifications?.[type] || [])) {
+                            for (const notification of notifications?.[type]?.[address] || []) {
+                                await this.firebase.sendToDevices(notification, null, address)
                             }
                         }
                     }
                 }
-                block = this.queue.shift();
-            }catch (e) {
-                if(!block.reRequest){
-                    block.reRequest = true;
-                    this.queue.push(block)
-                }else{
-                    block = this.queue.shift();
-                    console.log("Error: ",e)
+
+            } catch (e) {
+
+                console.log("E", e)
+
+                if(!item.reRequest){
+                    item.reRequest = true;
+                    this.queue.push(item)
+                }
+                else{
+                    
+                    //block = this.queue.shift();
+                    console.log("Error: block", e)
+                    console.log(item.height)
+
                 }
             }
+
+            item = this.queue.shift()
         }
+
         this.workerEnable = false
     }
 
@@ -55,15 +78,39 @@ class Notifications{
             this.worker()
     }
 
-    async sendBlock(block, nodeId){
-        if(!this.queue.some(el=>el.height ===block.height)) {
-           const notification = {
-               height: block.height,
+
+    ///// dep
+    /*async sendBlock(block, nodeId){
+        if(!this.queue.some(el=>el.height === block.height)) {
+           const item = {
+               height: item.height,
                nodeId: nodeId,
                reRequest: false
            }
            this.queue.push(notification)
            this.startWorker()
+        }
+    }*/
+
+    addblock(block, node){
+        console.log('f.numfromreleasestring(node.version)', f.numfromreleasestring(node.version), node.version)
+        if(node.version && f.numfromreleasestring(node.version) > 0.2000025 && this.height < block.height){
+
+            if(!this.firebase.inited) console.log("WARNING FIREBASE")
+
+            console.log("ADD", block.height, node.host)
+
+            const notification = {
+                height: block.height,
+                node: node,
+                reRequest: false
+            }
+
+            this.height = block.height
+
+            this.queue.push(notification)
+
+            this.startWorker()
         }
     }
     
