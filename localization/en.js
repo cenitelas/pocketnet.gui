@@ -97,6 +97,7 @@ ____loclib.rstate = "Reputation";
 ____loclib.rprofile = "Profile";
 ____loclib.rsettings = "Settings";
 ____loclib.rwallet = "Wallet";
+____loclib.rstatistic = "Statistic";
 ____loclib.raccounts = "Accounts";
 ____loclib.rsystem = "System";
 ____loclib.rconnection = "Connection";
@@ -151,6 +152,7 @@ ____loclib.tacaddress = "Account Address";
 ____loclib.twallet = "Wallet";
 ____loclib.twalletaddresses = "Wallet addresses";
 ____loclib.tTotal = "Total";
+____loclib.totalBalance = "Total balance";
 ____loclib.wsselect = "Select Source From Menu";
 ____loclib.wsenter = "Enter Address Or Select From Menu";
 ____loclib.wsreciever = "Receiver address";
@@ -197,6 +199,17 @@ ____loclib.uabout = "About myself";
 ____loclib.uwebsite = "Web Site";
 ____loclib.uaddresesd = "Addresses for Donations";
 ____loclib.usavechanges = "Do you want to save your changes?";
+
+//statistic
+
+____loclib.referralsCount = 'Users who have used the referral link.';
+____loclib.commentatorsCount_0 = 'Users have commented on you more than 1 time';
+____loclib.commentatorsCount_1 = 'Users have commented on you more than 3 times';
+____loclib.commentatorsCount_2 = 'Users have commented on you more than 7 times';
+____loclib.from = 'Period: ';
+____loclib.to = 'to';
+____loclib.empty = 'Information not found';
+____loclib.apply = 'Apply';
 
 //ustate
 ____loclib.sreps = "Reputation and Limitations";
@@ -836,7 +849,7 @@ ____loclib.e13258 = "You have reached the limit of complaints in a 24 hour perio
 ____loclib.e2000 = "Connection error. Please try again"
 
 ____loclib.e13259 = "Cannot complain about your own post"
-____loclib.e13260 = "You have already registered your complaint about this post"
+____loclib.e13260 = "You have already filed a complaint against this user."
 ____loclib.e13261 = "Save Key"
 ____loclib.e13262 = "Later"
 ____loclib.e13263 = "Subscribe and Turn On notifications from this user"
@@ -1208,7 +1221,7 @@ ____loclib.transactionnotfound = "Transaction not found";
 
 ____loclib.donateself = "You can't donate yourself";
 ____loclib.donated = "commented your post and donated"
-____loclib.incoins = "Not enough coins"
+____loclib.incoins = "Not enough coins";
 ____loclib.yourbalance = "Your balance"
 ____loclib.sumoftransaction = "Sum of transaction"
 

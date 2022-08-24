@@ -65,6 +65,7 @@ __map =  {
 		"js/vendor/owl/owl.carousel.min.js",
 		{path : "js/vendor/shadow-popup/popup.js", babelify : true},
 		"js/popups/index.js",
+		"js/vendor/lame.min.js",
 		"js/vendor/firebase-app.js",
 		"js/vendor/firebase-messaging.js",
 	],
@@ -82,6 +83,7 @@ __map =  {
 		{path : "js/image-uploader.js", babelify : true},
 		"js/_map.js",
 		{path : "js/logger.js", babelify : true},
+		{path : "js/videotransport.js", babelify : true},
 		{path : "js/app.js", babelify : true},
 		"js/main.js"
 	],
@@ -975,6 +977,13 @@ __map =  {
 
 		
 	},
+
+	statistic : {
+		uri : "statistic",
+		href : "statistic",
+		add : insertingfunc,
+	},
+
 	videoCabinet : {
 		uri : "videoCabinet",
 		href : "videoCabinet",
@@ -1004,7 +1013,6 @@ __map =  {
 	commentBanner : {
 		uri : "commentBanner",
 		href : "commentBanner",
-		preshell : true,
 		add : insertingfunc,
 		anonimus : true,
 		exportcss : true,
