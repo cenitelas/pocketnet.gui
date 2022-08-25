@@ -32,6 +32,14 @@ var testnodes = [
 	
 
 	{
+		host : '188.187.45.218',
+		port : 39091,
+		ws : 6067,
+		name : 'push.v.pocketnet.app',
+		stable : true
+	},
+
+	{
 		host : '78.37.233.202',
 		port : 39091,
 		ws : 6067,
