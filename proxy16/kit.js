@@ -1105,6 +1105,14 @@ var kit = {
 			},
 		},
 
+		notifications: {
+			info : function(){
+				return kit.proxy().then(async proxy => {
+					return proxy.notifications.info();
+				})
+			},
+		},
+
 		transports : {
 			axios : function(...args){
 				return kit.proxy().then(async proxy => {

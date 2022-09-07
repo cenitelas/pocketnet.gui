@@ -346,10 +346,8 @@ var Proxy = function (settings, manage, test, logger, reverseproxy) {
 			return notifications.init(self, firebase, nodeManager);
 		},
 
-		sendBlock: function (block){
-			return Promise.reject("dep")
-			//temp
-			//return notifications.sendBlock(block);
+		info: function () {
+			return notifications.info()
 		},
 
 		destroy: function () {

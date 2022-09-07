@@ -1,6 +1,15 @@
 var f = require('../functions');
 
 
+class NotificationStats{
+    constructor() {
+        this.success = 0
+        this.reject = 0
+        this.longTime = 0
+        this.fastTime = 0
+    }
+}
+
 class Notifications{
     constructor() {}
     
@@ -12,6 +21,7 @@ class Notifications{
         this.workerEnable = false;
         this.queue = []
         this.height = 0
+        this.stats = new NotificationStats()
         // this.test()
         return this;
     }
@@ -21,8 +31,8 @@ class Notifications{
         this.workerEnable = true
 
         let item = this.queue.shift();
-
         while (item){
+            const ts = Date.now();
             try {
                 const node = item.node
 
@@ -50,6 +60,7 @@ class Notifications{
                     }
                 }
 
+                this.stats.success++;
             } catch (e) {
 
                 console.log("E", e)
@@ -59,14 +70,16 @@ class Notifications{
                     this.queue.push(item)
                 }
                 else{
-                    
+                    this.stats.reject++;
                     //block = this.queue.shift();
                     console.log("Error: block", e)
                     console.log(item.height)
 
                 }
             }
-
+            const totalTime = Date.now() - ts;
+            this.stats.longTime = this.stats.longTime < totalTime ? totalTime : this.stats.longTime
+            this.stats.fastTime = this.stats.fastTime > totalTime ? totalTime : this.stats.fastTime > 0 ? this.stats.fastTime : totalTime
             item = this.queue.shift()
         }
 
@@ -78,22 +91,11 @@ class Notifications{
             this.worker()
     }
 
-
-    ///// dep
-    /*async sendBlock(block, nodeId){
-        if(!this.queue.some(el=>el.height === block.height)) {
-           const item = {
-               height: item.height,
-               nodeId: nodeId,
-               reRequest: false
-           }
-           this.queue.push(notification)
-           this.startWorker()
-        }
-    }*/
+    info(){
+        return this.stats
+    }
 
     addblock(block, node){
-        console.log('f.numfromreleasestring(node.version)', f.numfromreleasestring(node.version), node.version)
         if(node.version && f.numfromreleasestring(node.version) > 0.2000025 && this.height < block.height){
 
             if(!this.firebase.inited) console.log("WARNING FIREBASE")
@@ -116,43 +118,6 @@ class Notifications{
     
     destroy(){
         this.queue = [];
-    }
-
-    async test(){
-        // 677211 - pocketnetteam
-        // 357441 - money (a lot)
-        // 416415 - answer
-        // 797528 - private content
-        // 834482 - boosts
-
-        const test = [677211, 357441, 357441, 416415, 797528, 834482]
-        setInterval(async ()=>{
-            try {
-                if(this.lastBlock!==677211) {
-                    const node = this.nodeManager.selectProbabilityByVersion();
-                    // const notifications = await this.proxy.nodeControl.request.getNotifications([block.height])
-                    if (node) {
-                        const notifications = await node.rpcs("getnotifications", [677211])
-                        for (const type of Object.keys(notifications)) {
-                            if (type === 'pocketnetteam') {
-                                for (const notification of notifications?.[type] || []) {
-                                    await this.firebase.sendToAll(notification)
-                                }
-                            } else {
-                                for (const address of Object.keys(notifications?.[type] || [])) {
-                                    for (const notification of notifications?.[type]?.[address] || []) {
-                                        await this.firebase.sendToDevices(notification, null, address)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    this.lastBlock = 677211
-                }
-            }catch (e){
-                console.log('Error:  ', e)
-            }
-        },5000)
     }
 }
 
