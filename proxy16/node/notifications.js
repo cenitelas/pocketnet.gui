@@ -22,7 +22,7 @@ class Notifications{
         this.queue = []
         this.height = 0
         this.stats = new NotificationStats()
-        // this.test()
+        this.test()
         return this;
     }
 
@@ -36,26 +36,21 @@ class Notifications{
             try {
                 const node = item.node
 
-                console.log("Send push: ", node.id, " | ", item.height)
+                // console.log("Send push: ", node.id, " | ", item.height)
 
                 const notifications = await node.rpcs("getnotifications", [item.height])
 
-                console.log('has notifications')
-
                 if(!this.firebase.inited) throw new Error('Firebase not inited')
 
-                for (const type of Object.keys(notifications)) {
-                    if (type === 'pocketnetteam') {
-
-                        for (const notification of notifications?.[type] || []) {
-                            await this.firebase.sendToAll(notification)
-                        }
-
-                    } else {
-                        for (const address of Object.keys(notifications?.[type] || [])) {
-                            for (const notification of notifications?.[type]?.[address] || []) {
-                                await this.firebase.sendToDevices(notification, null, address)
-                            }
+                for (const address of Object.keys(notifications?.notifiers)) {
+                    const notifier = notifications?.notifiers?.[address]
+                    for (const type of Object.keys(notifier?.e || [])) {
+                        for(const index of notifier?.e[type] || []) {
+                            const notification = notifications.data[index];
+                            notification.info = notifier.i;
+                            notification.type = type;
+                            console.log('notification', notification)
+                            await this.firebase.sendToDevices(notification, null, address);
                         }
                     }
                 }
@@ -87,8 +82,8 @@ class Notifications{
     }
 
     startWorker(){
-        if(!this.workerEnable)
-            this.worker()
+        // if(!this.workerEnable)
+        //     this.worker()
     }
 
     info(){
@@ -99,8 +94,6 @@ class Notifications{
         if(node.version && f.numfromreleasestring(node.version) > 0.2000025 && this.height < block.height){
 
             if(!this.firebase.inited) console.log("WARNING FIREBASE")
-
-            console.log("ADD", block.height, node.host)
 
             const notification = {
                 height: block.height,
@@ -115,9 +108,67 @@ class Notifications{
             this.startWorker()
         }
     }
+
+    async test(){
+        try {
+            await this.nodeManager.waitready()
+            const node = this.nodeManager.selectbest();
+            const notifications = await node.rpcs("getnotifications", [1194580])
+            for (const address of Object.keys(notifications?.notifiers)) {
+                const notifier = notifications?.notifiers?.[address]
+                for (const type of Object.keys(notifier?.e || [])) {
+                    for (const index of notifier?.e[type] || []) {
+                        let notification = notifications.data[index];
+                        notification.info = notifier.i;
+                        notification.type = type;
+                        notification = this.transaction(notification, address)
+                        notification = this.setDetails(notification)
+                        await this.firebase.sendToDevices(notification, null, address);
+                    }
+                }
+            }
+        }catch (e) {
+            console.log('E', e)
+        }
+    }
+
+    transaction(notification, address){
+        if(notification.type === 'money') {
+            if (notification.outputs.length && !notification.outputs?.[0]?.addresshash)
+                notification.cointype = this.proxy.pocketnet.kit.getCoibaseType(notification.outputs[0])
+        }
+        const amount = notification?.outputs?.find(el=>el.addresshash===address)?.value;
+        notification.amount = amount ? amount / 100000000 : 0
+        return notification
+    }
+
+    setDetails(notification){
+        switch (notification.type){
+            case 'money':
+                if(notification.cointype){
+                    notification.type = notification.cointype;
+                }
+                break;
+            case 'comment':
+                if(notification.amount){
+                    notification.type = 'commentDonate'
+                }
+                break;
+            case 'answer':
+                if(notification.amount){
+                    notification.type = 'answerDonate'
+                }
+                break;
+        }
+        return notification
+    }
     
     destroy(){
         this.queue = [];
+    }
+
+    dictionary(type, lang){
+
     }
 }
 

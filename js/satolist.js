@@ -9162,8 +9162,8 @@ Platform = function (app, listofnodes) {
                     }
 
                 })
-
                 localStorage['usersettings'] = JSON.stringify(values);
+                self?.firebase?.settings()
             },
 
             load: function () {
@@ -22828,6 +22828,13 @@ Platform = function (app, listofnodes) {
 
             },
 
+            setSettings: function (proxy) {
+                if(!proxy) return Promise.reject('proxy')
+                return self.request.setSettings(proxy).then(r => {
+                    return Promise.resolve()
+                })
+            },
+
             existanother : function(proxy, address){
                 var obj = self.storage.data[appid] || {}
 
@@ -22910,6 +22917,21 @@ Platform = function (app, listofnodes) {
 
         }
 
+        self.settings = function(proxy){
+            if(!proxy){
+                proxy = platform.app.api.get.current()
+            }
+
+            if(!proxy) return Promise.reject('proxy')
+
+            return self.api.checkProxy(proxy).then(r => {
+                return  self.api.setSettings(proxy)
+            }).catch(e => {
+                console.log(e)
+                return Promise.resolve()
+            })
+        }
+
         self.request = {
 
             revokeall : function(){
@@ -22954,7 +22976,20 @@ Platform = function (app, listofnodes) {
                 return platform.app.api.fetchauth('firebase/set', {
                     device : device(),
                     token : token,
-                    id : appid
+                    id : appid,
+                    settings: platform.sdk.usersettings.meta
+                }, {
+                    proxy : proxy
+                })
+
+            },
+
+            setSettings: function (proxy) {
+                const settings = platform.sdk.usersettings.meta;
+                settings.isWeb = Boolean(!window.cordova)
+                return platform.app.api.fetchauth('firebase/settings', {
+                    device : device(),
+                    settings: settings
                 }, {
                     proxy : proxy
                 })
@@ -22989,21 +23024,27 @@ Platform = function (app, listofnodes) {
             }else if(usingWeb) {
 
                 try{
+                    if(!firebase.apps.length) {
+                        firebase.initializeApp({
+                            messagingSenderId: "1020521924918",
+                            projectId: 'pocketnet',
+                            apiKey: 'AIzaSyC_Jeet2gpKRZp44iATwlFFA7iGNYsabkk',
+                            appId: '1:1020521924918:ios:ab35cc84f0d10d86aacb97',
+                        });
+                    }
                     const messaging = firebase.messaging();
-
-
                     messaging.getToken().then(token=>{
-                        console.log("GET ", token)
+                        console.log(token)
                         currenttoken = token
                         platform.fcmtoken = token
                         platform.matrixchat.changeFcm()
                         self.events()
-
                         if (clbk)
-                                clbk(token)
+                            clbk(token)
                     }).catch(e => {
                         console.log("E", e)
                     })
+
                 }
                 catch (e) {
                     console.log("E", e)
@@ -23030,15 +23071,15 @@ Platform = function (app, listofnodes) {
 
                 });
             }else if (usingWeb){
-
-                const messaging = firebase.messaging();
-                messaging.requestPermission().then(perm=>{
-                    self.get(clbk)
-                }).catch(e=>{
-                    usingWeb = false;
-                    console.log("Disabled firebase permissions")
-                })
-
+                Notification.requestPermission().then((permission) => {
+                    if (permission === 'granted') {
+                        console.log('Notification permission granted.');
+                        self.get(clbk)
+                    } else {
+                        usingWeb = false;
+                        console.log('Unable to get permission to notify.');
+                    }
+                });
             }
         }
 
@@ -23256,14 +23297,6 @@ Platform = function (app, listofnodes) {
         }
 
         self.init = function(clbk){
-            if(usingWeb){
-                if(!firebase.apps.length) {
-                    firebase.initializeApp({
-                        messagingSenderId: "1020521924918"
-                    });
-                }
-            }
-
             if(clbk) clbk()
 
             self.prepare(function(token){

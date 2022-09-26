@@ -99,8 +99,6 @@ var Wss = function(node, service){
                 authorize(user)
 
                 emit('open')
-
-                console.log("opened", node.host, f.numfromreleasestring(node.version), node.version)
                 
             };
 

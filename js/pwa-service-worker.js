@@ -5,20 +5,9 @@ if(typeof _Electron != 'undefined'){
     pwaFetch = (...args) => proxyFetch(...args);
 }
 
-const initFirebase = (registration)=>{
-   if(!firebase.apps.length) {
-       firebase.initializeApp({
-           messagingSenderId: "1020521924918"
-       });
-   }
-    firebase.messaging().useServiceWorker(registration);
-}
-
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./service-worker.js').then(function (registration) {
         console.log('Service worker registration succeeded:', registration);
-        if(typeof firebase != 'undefined')
-            initFirebase(registration)
     }, /*catch*/ function (error) {
         console.log('Service worker registration failed:', error);
     });

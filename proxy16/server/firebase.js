@@ -2,7 +2,7 @@ var Datastore = require('nedb');
 var f = require('../functions');
 
 var Fbtoken = function({
-    token, device, address, id, app, date
+    token, device, address, id, app, date, settings
 }){
     var self = this;
 
@@ -21,6 +21,7 @@ var Fbtoken = function({
             address,
             id : id,
             date : date,
+            settings: settings,
             key : key()
         }
     }
@@ -89,11 +90,9 @@ var Firebase = function(p){
     }
 
     var adduser = function(user){
-        console.log("Login user: ", user)
         if(!finduser(user) && self.inited){
 
             self.users.push(user)
-
             setTimeout(function(){
 
                 try{
@@ -112,184 +111,6 @@ var Firebase = function(p){
 
     var removeuserclbk = function(user){
         self.wss.clbks.firebase.removeUser(user)
-    }
-
-    var messages = {
-
-        // comment : function(data){
-        //
-        //     if (data.reason == 'post') {
-        //         n.body = data.username + " commented your post."
-        //         n.title = "New Comment"
-        //     }
-        //
-        //     if (data.reason == 'answer' && data.comment && data.share && data.user) {
-        //         n.body = data.username + " answered on your comment."
-        //         n.title = "New Comment"
-        //     }
-        //
-        //     return m
-        // },
-
-
-        commentscore : function(data){
-
-            var m = {
-                title : "New Comment Rate",
-                body : data?.account?.name + " is your new referral!"
-            }
-
-            return m
-        },
-
-        answer : function(data){
-
-            var m = {
-                body : data?.account?.name + " answered on your comment.",
-                title : "New answer"
-            }
-
-            return m
-        },
-
-        comment : function(data){
-
-            var m = {
-                body : data?.account?.name + " commented your post.",
-                title : "New Comment"
-            }
-
-            return m
-        },
-
-        subscriber : function(data){
-
-            var m = {
-                body : data?.account?.name + ' followed you',
-                title : "New Follower"
-            }
-
-            return m
-        },
-
-        contentscore : function(data){
-
-            var m = {
-                title : "New Content Rate",
-                body : data?.account?.name + " is your new referral!"
-            }
-
-            return m
-        },
-
-
-        boost : function(data){
-
-            var m = {
-                title : "New boost",
-                body : data?.account?.name + " is your new boost!"
-            }
-
-            return m
-        },
-
-        privatecontent : function(data){
-
-            var m = {
-                title : "New private content",
-                body : data?.account?.name + " sent you the content"
-            }
-
-            return m
-        },
-        
-
-        referal : function(data){
-
-            var m = {
-                title : "You have a new referral",
-                body : data?.account?.name + " is your new referral!"
-            }
-
-            return m
-        },
-
-        repost : function(data){
-
-            var m = {
-                title : "New Post Reshare",
-                body : data.username + " reshared your post!"
-            }
-
-            return m
-        },
-
-        pocketnetteam: function (data){
-            var m = {
-                title : "New post from the team",
-                body : data?.description
-            }
-
-            return m
-        },
-
-        postfromprivate : function(data){
-
-            var m = {
-                title : "New Post From Pocketnet User",
-                body : data.account?.name + " has a brand new post!"
-            }
-
-            return m
-        },
-
-        sharepocketnet : function(data){
-
-            var m = {
-                title : "New Post From Pocketnet Team",
-                body : "Pocketnet team has a brand new post!"
-            }
-            
-            return m
-        },
-
-        money : function(data){
-
-            var m = {}
-                m.body = (data?.account?.name || "User") + " replenished coins!"
-                m.title = 'Congrats!'
-            return m
-
-        },
-
-        event : function(data){
-
-            var m = {}
-
-            if (data.mesType == 'userInfo') {
-                m.body = "You rescued someone from the censored web!"
-                m.title = 'Congrats!'
-            }
-
-            if (data.mesType == 'subscribe') {
-                m.body = data.username + ' followed you'
-                m.title = "New Follower"
-            }
-
-            if (data.mesType == 'upvoteShare') {
-
-                if (data.upvoteVal > 2) {
-                    m.body = data.username + " upvoted your post, " + data.upvoteVal + ' ★'
-                    m.title = "New Upvote"
-                }
-                else{
-                    return null
-                }
-            }
-
-            return m
-         
-        },
     }
 
     self.getall = function(){
@@ -325,11 +146,10 @@ var Firebase = function(p){
 
     self.kit = {
         addToken : function({
-            token, device, U, id
+            token, device, U, id, settings
         }){
-            console.log("Change token user: ", token)
             var date = f.time()
-            var fbtoken = new Fbtoken({token, device, address : U, id, date})
+            var fbtoken = new Fbtoken({token, device, address : U, id, date, settings})
             if(!fbtoken.check()) return Promise.reject('checkToken')
 
             return new Promise((resolve, reject) => {
@@ -346,6 +166,21 @@ var Firebase = function(p){
                 });
 
             })
+        },
+
+        setSettings : function({device, settings}){
+            return new Promise((resolve, reject) => {
+                    const userIndex = self.users.findIndex(el=>el.device===device)
+                    if(userIndex >=0){
+                        db.update({ device: device }, { $set: { settings: settings } }, {}, function (err) {
+                            if(err) return reject(err)
+                            resolve()
+                        });
+                        self.users[userIndex].settings = settings
+                        resolve(self.users[userIndex])
+                    }
+                }
+            )
         },
 
         revokeOtherTokens : function({device, token}){
@@ -454,52 +289,70 @@ var Firebase = function(p){
             })
 
         },
-
         info : function(){
             return Promise.resolve({id : self.id})
+        }
+    }
+
+    self.checkPermissions = function (type, settings) {
+        switch (type) {
+            case 'money':
+                return Boolean(settings?.transactions.value)
+            case 'winPost':
+                return Boolean(settings?.win.value)
+            case 'winComment':
+                return Boolean(settings?.win.value)
+            case 'winCommentref':
+                return Boolean(settings?.win.value)
+            case 'winPostref':
+                return Boolean(settings?.win.value)
+            case 'comment':
+                return Boolean(settings?.comments.value)
+            case 'commentDonate':
+                return Boolean(settings?.transactions.value)
+            case 'answer':
+                return Boolean(settings?.answers.value)
+            case 'answerDonate':
+                return Boolean(settings?.transactions.value)
+            case 'subscriber':
+                return Boolean(settings?.followers.value)
+            case 'contentscore':
+                return true
+            case 'commentscore':
+                return Boolean(settings?.commentScore.value)
+            default:
+                return true
         }
     }
 
     self.send = function({
         data, users
     }){
-
+        for(const user of users){
+            if(!self.checkPermissions(data.type, user?.settings)){
+                users = users.filter(el=>el.token !== user.token)
+            }
+        }
 
         if(!data || !users?.length) return Promise.reject()
 
         if(!self.app) return Promise.reject('app')
 
-        if (data.nameFrom) data.username = data.nameFrom
+        const header = NotificationsDictionary({
+            user: 'имя пользователя',
+            amount: data.amount,
+            score: data.score
+        })?.[data.type]?.[data?.info?.[0] || 'ru'] || NotificationsDictionary().default[data?.info?.[0] || 'ru']
 
-        if(!data.username){
-
-            data.username = 'Somebody'
-
-            //return Promise.reject('username')
-        }
-
-        var m = null;
-
-        if (data.msg == 'transaction' && data.mesType) {
-            data.type = data.mesType
-            delete data.mesType
-        }
-
-        if (data.mesType) m = messages[data.mesType]
-        if (data.msg && !m) m = messages[data.msg]
-        if (data.type && !m) m = messages[data.type]
-
-        if (m){
-            var notification = m(data)
+        if (header){
             var tokens = users?.map(el=>el.token) || []
-            if (notification && tokens.length) {
+            if (tokens.length) {
                 for (let i = 0; i < tokens.length; i += 999) {
                     const maxSizeTokens = tokens.slice(i, 999);
 
                     var message = {
                         tokens: maxSizeTokens,
                         data: {json: JSON.stringify(data)},
-                        notification: notification,
                         android: {
 
                             notification: {
@@ -520,8 +373,13 @@ var Firebase = function(p){
                                 }
                             }
                         }
-
                     };
+                    if(!users?.settings?.isWeb){
+                        message.notification = header;
+                    }else{
+                        message.data = {...message.data, ...header}
+                        message.data.image = data?.info?.[3];
+                    }
                     return admin.messaging().sendMulticast(message).then((response) => {
                         for(const responseIndex in response.responses) {
                             if(!response.responses[responseIndex].success && users[responseIndex]){

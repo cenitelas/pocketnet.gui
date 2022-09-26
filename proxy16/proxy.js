@@ -2094,7 +2094,19 @@ var Proxy = function (settings, manage, test, logger, reverseproxy) {
 					})
 				},
 			},
+			settings: {
+				authorization: 'signature',
+				path: '/firebase/settings',
+				action: function (data) {
+					return self.firebase.kit.setSettings(data).then((r) => {
+						return Promise.resolve({ data: r });
+					}).catch(e => {
+						console.error(e)
 
+						return Promise.reject(e)
+					})
+				},
+			},
 			test: {
 				path: '/firebase/test',
 				action: function (data) {
