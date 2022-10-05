@@ -28,60 +28,66 @@ var reverseproxy = _.indexOf(process.argv, '--reverseproxy') > -1 || global.REVE
 var logger = new Logger(['general', 'rpc', 'system', 'remote', 'firebase', 'nodecontrol']).init()
 
 var testnodes = [
-
-	
-
 	{
 		host : '188.187.45.218',
-		port : 39091,
-		ws : 6067,
-		name : 'push.v.pocketnet.app',
+		port: 29092,
+		ws: 29097,
+		name : 'test3.v.pocketnet.app',
 		stable : true
 	},
-
-	{
-		host : '78.37.233.202',
-		port : 39091,
-		ws : 6067,
-		name : 'test.v.pocketnet.app',
-		stable : true
-	},
-
-	{
-		host : '157.90.235.121',
-		port : 39091,
-		ws : 6067,
-		name : 'test.1.pocketnet.app',
-		stable : true
-	},
-	{
-		host : '157.90.228.34',
-		port : 39091,
-		ws : 6067,
-		name : 'test.2.pocketnet.app',
-		stable : true
-	},
-	{
-		host : '116.203.219.28',
-		port : 39091,
-		ws : 6067,
-		name : 'test.pocketnet.app',
-		stable : true
-	},
-	{
-		host : '137.135.25.73',
-		port : 39091,
-		ws : 6067,
-		name : 'tawmaz',
-		stable : false
-	},
-	{
-		host : '109.173.41.29',
-		port : 39091,
-		ws : 6067,
-		name : 'lostystyg',
-		stable : false
-	}    
+	
+	//
+	// {
+	// 	host : '188.187.45.218',
+	// 	port : 39091,
+	// 	ws : 6067,
+	// 	name : 'push.v.pocketnet.app',
+	// 	stable : true
+	// },
+	//
+	// {
+	// 	host : '78.37.233.202',
+	// 	port : 39091,
+	// 	ws : 6067,
+	// 	name : 'test.v.pocketnet.app',
+	// 	stable : true
+	// },
+	//
+	// {
+	// 	host : '157.90.235.121',
+	// 	port : 39091,
+	// 	ws : 6067,
+	// 	name : 'test.1.pocketnet.app',
+	// 	stable : true
+	// },
+	// {
+	// 	host : '157.90.228.34',
+	// 	port : 39091,
+	// 	ws : 6067,
+	// 	name : 'test.2.pocketnet.app',
+	// 	stable : true
+	// },
+	// {
+	// 	host : '116.203.219.28',
+	// 	port : 39091,
+	// 	ws : 6067,
+	// 	name : 'test.pocketnet.app',
+	// 	stable : true
+	// },
+	// {
+	// 	host : '137.135.25.73',
+	// 	port : 39091,
+	// 	ws : 6067,
+	// 	name : 'tawmaz',
+	// 	stable : false
+	// },
+	// {
+	// 	host : '109.173.41.29',
+	// 	port : 39091,
+	// 	ws : 6067,
+	// 	name : 'lostystyg',
+	// 	stable : false
+	// }
 ]
 
 

@@ -1,12 +1,18 @@
 var f = require('../functions');
+const dictionary = require("./notificationsDictionary");
 
 
 class NotificationStats{
     constructor() {
         this.success = 0
         this.reject = 0
+        this.averageSend = 0
         this.longTime = 0
         this.fastTime = 0
+        this.averageTime = 0
+        this.memoryUsage = 0
+        this.maxSendPush = 0
+        this.minSendPush = 0
     }
 }
 
@@ -22,7 +28,6 @@ class Notifications{
         this.queue = []
         this.height = 0
         this.stats = new NotificationStats()
-        this.test()
         return this;
     }
 
@@ -35,26 +40,50 @@ class Notifications{
             const ts = Date.now();
             try {
                 const node = item.node
-
-                // console.log("Send push: ", node.id, " | ", item.height)
-
+                const events = [];
                 const notifications = await node.rpcs("getnotifications", [item.height])
-
-                if(!this.firebase.inited) throw new Error('Firebase not inited')
-
                 for (const address of Object.keys(notifications?.notifiers)) {
                     const notifier = notifications?.notifiers?.[address]
                     for (const type of Object.keys(notifier?.e || [])) {
-                        for(const index of notifier?.e[type] || []) {
-                            const notification = notifications.data[index];
-                            notification.info = notifier.i;
-                            notification.type = type;
-                            console.log('notification', notification)
-                            await this.firebase.sendToDevices(notification, null, address);
+                        for (const index of notifier?.e[type] || []) {
+                            const eventIndex = events.findIndex(el => el.index === index && el.type === type);
+                            if (eventIndex >=0) {
+                                if (!events[eventIndex]?.addresses.some(el=>el===address)) {
+                                    events[eventIndex].addresses.push(address)
+                                }
+                            } else {
+                                let notification = notifications.data[index];
+                                notification.info = notifier.i || notifier.info;
+                                notification.type = type;
+                                if (notification.type === 'privatecontent') {
+                                    continue
+                                }
+                                notification = this.transaction(notification, address)
+                                notification = this.setDetails(notification)
+                                notification.header = dictionary({
+                                    user: notification?.account?.n || notification?.account?.name || "",
+                                    amount: notification.amount || 0,
+                                    score: notification.val || 0,
+                                })?.[notification.type]?.[notification?.info?.l || notification?.info?.lang || 'ru'] || dictionary().default[notification?.info?.l || notification?.info?.lang || 'ru']
+                                notification.image = notification?.account?.a || notification?.account?.avatar
+                                notification.url = this.generateUrl(notification)
+                                events.push({
+                                    type: type,
+                                    index: index,
+                                    notification: notification,
+                                    addresses: [address]
+                                })
+                            }
                         }
                     }
                 }
 
+                if(events.length){
+                  //  await this.firebase.sendEvents(events);
+                    for(const event of events) {
+                        await this.firebase.sendToAll(event.notification)
+                    }
+                }
                 this.stats.success++;
             } catch (e) {
 
@@ -66,10 +95,7 @@ class Notifications{
                 }
                 else{
                     this.stats.reject++;
-                    //block = this.queue.shift();
                     console.log("Error: block", e)
-                    console.log(item.height)
-
                 }
             }
             const totalTime = Date.now() - ts;
@@ -82,19 +108,32 @@ class Notifications{
     }
 
     startWorker(){
-        // if(!this.workerEnable)
-        //     this.worker()
+        if(!this.workerEnable)
+            this.worker()
     }
 
     info(){
+        const sendSum = this.stats.success + this.stats.reject;
+        this.stats.averageSend = sendSum ? sendSum /2 : 0;
+
+        const timeSum = this.stats.longTime + this.stats.fastTime;
+        this.stats.averageTime = timeSum ? timeSum / 2 : 0;
+
+        this.stats.memoryUsage = this.getMemoryUsage()
+
         return this.stats
     }
 
     addblock(block, node){
         if(node.version && f.numfromreleasestring(node.version) > 0.2000025 && this.height < block.height){
 
-            if(!this.firebase.inited) console.log("WARNING FIREBASE")
-
+            if(!this.firebase.inited) {
+                console.log("WARNING FIREBASE")
+                return
+            }
+            if(!this?.firebase?.users?.length){
+                return;
+            }
             const notification = {
                 height: block.height,
                 node: node,
@@ -113,32 +152,70 @@ class Notifications{
         try {
             await this.nodeManager.waitready()
             const node = this.nodeManager.selectbest();
-            const notifications = await node.rpcs("getnotifications", [1194580])
+            const notifications = await node.rpcs("getnotifications", [1231059])
+            const events = [];
             for (const address of Object.keys(notifications?.notifiers)) {
                 const notifier = notifications?.notifiers?.[address]
                 for (const type of Object.keys(notifier?.e || [])) {
                     for (const index of notifier?.e[type] || []) {
-                        let notification = notifications.data[index];
-                        notification.info = notifier.i;
-                        notification.type = type;
-                        notification = this.transaction(notification, address)
-                        notification = this.setDetails(notification)
-                        await this.firebase.sendToDevices(notification, null, address);
+                        const eventIndex = events.findIndex(el => el.index === index && el.type === type);
+                        if (eventIndex >=0) {
+                            if (!events[eventIndex]?.addresses.some(el=>el===address)) {
+                                events[eventIndex].addresses.push(address)
+                            }
+                        } else {
+                            let notification = notifications.data[index];
+                            notification.info = notifier.i || notifier.info;
+                            notification.type = type;
+                            if (notification.type === 'privatecontent') {
+                                continue
+                            }
+                            notification = this.transaction(notification, address)
+                            notification = this.setDetails(notification)
+                            notification.header = dictionary({
+                                user: notification?.account?.n || notification?.account?.name || "",
+                                amount: notification.amount || 0,
+                                score: notification.val || 0,
+                            })?.[notification.type]?.[notification?.info?.l || notification?.info?.lang || 'ru'] || dictionary().default[notification?.info?.l || notification?.info?.lang || 'ru']
+                            notification.image = notification?.account?.a || notification?.account?.avatar
+                            notification.url = this.generateUrl(notification)
+                            events.push({
+                                type: type,
+                                index: index,
+                                notification: notification,
+                                addresses: [address]
+                            })
+                        }
                     }
                 }
             }
+            console.log(events.map(el=>({type: el.type, url: el.notification.url})))
         }catch (e) {
             console.log('E', e)
         }
     }
 
     transaction(notification, address){
-        if(notification.type === 'money') {
-            if (notification.outputs.length && !notification.outputs?.[0]?.addresshash)
-                notification.cointype = this.proxy.pocketnet.kit.getCoibaseType(notification.outputs[0])
+        switch (notification.type) {
+            case 'money':
+                if (notification.outputs.length && !notification.outputs?.[0]?.addresshash)
+                    notification.cointype = this.proxy.pocketnet.kit.getCoibaseType(notification.outputs[0])
+                const amount = notification?.outputs?.find(el => el.addresshash === address)?.value;
+                notification.amount = amount ? amount / 100000000 : 0
+                break
+            case 'boost':
+                notification.amount = notification?.inputs?.reduce((a, item)=> a+item.value, 0) - notification?.outputs?.reduce((a, item)=> a+item.value, 0)
+                break
+            case 'comment':
+                notification.amount =
+                    notification?.outputs?.filter?.(el=>el.addresshash === address)?.reduce((a, item)=> a+item.value, 0) -
+                    notification?.inputs?.filter?.(el=>el.addresshash === address)?.reduce((a, item)=> a+item.value, 0)
+                break
+            default:
+                notification.amount = 0
+                break
         }
-        const amount = notification?.outputs?.find(el=>el.addresshash===address)?.value;
-        notification.amount = amount ? amount / 100000000 : 0
+
         return notification
     }
 
@@ -162,7 +239,47 @@ class Notifications{
         }
         return notification
     }
-    
+
+    getMemoryUsage(){
+        const arr = [1, 2, 3, 4, 5, 6, 9, 7, 8, 9, 10];
+        arr.reverse();
+        const used = process.memoryUsage().heapUsed / 1024 / 1024;
+        return `${Math.round(used * 100) / 100} MB`
+    }
+
+    generateUrl(notification){
+        const content = notification?.relatedContent;
+            switch (notification.type) {
+                case 'money':
+                    return "/userpage?id=wallet"
+                case 'winPost':
+                    return "/userpage?id=wallet"
+                case 'winComment':
+                    return "/userpage?id=wallet"
+                case 'winCommentref':
+                    return "/userpage?id=wallet"
+                case 'winPostref':
+                    return "/userpage?id=wallet"
+                case 'comment':
+                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}`
+                case 'privatecontent':
+                    return `/index?s=${content?.rootTxHash || ""}`
+                case 'commentDonate':
+                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}`
+                case 'answer':
+                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}&parentid=${content.commentParentId || ""}`
+                case 'answerDonate':
+                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}&parentid=${content.commentParentId || ""}`
+                case 'subscriber':
+                    return ""
+                case 'contentscore':
+                    return `/index?s=${content?.rootTxHash || ""}`
+                case 'commentscore':
+                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}`
+                default:
+                    return ""
+        }
+    }
     destroy(){
         this.queue = [];
     }

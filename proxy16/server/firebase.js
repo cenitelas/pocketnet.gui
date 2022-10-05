@@ -1,5 +1,7 @@
 var Datastore = require('nedb');
 var f = require('../functions');
+var dictionary = require('../node/notificationsDictionary');
+const admin = require("firebase-admin");
 
 var Fbtoken = function({
     token, device, address, id, app, date, settings
@@ -80,6 +82,12 @@ var Firebase = function(p){
     var getAllUsers = function(){
         return _.filter(self.users, function(user){
             return user.address !== undefined
+        })
+    }
+
+    var getUsersByAddresses = function(addresses){
+        return _.filter(self.users, function(user){
+            return addresses.some(user.address)
         })
     }
 
@@ -308,6 +316,8 @@ var Firebase = function(p){
                 return Boolean(settings?.win.value)
             case 'comment':
                 return Boolean(settings?.comments.value)
+            case 'privatecontent':
+                return Boolean(settings?.comments.value)
             case 'commentDonate':
                 return Boolean(settings?.transactions.value)
             case 'answer':
@@ -338,52 +348,41 @@ var Firebase = function(p){
 
         if(!self.app) return Promise.reject('app')
 
-        const header = NotificationsDictionary({
-            user: 'имя пользователя',
-            amount: data.amount,
-            score: data.score
-        })?.[data.type]?.[data?.info?.[0] || 'ru'] || NotificationsDictionary().default[data?.info?.[0] || 'ru']
+        if (data.header){
+            var message = {
+                data: {json: JSON.stringify(data)},
+                android: {
 
-        if (header){
-            var tokens = users?.map(el=>el.token) || []
+                    notification: {
+                        priority: "MAX",
+                        visibility: "PUBLIC",
+                        icon: 'notification_icon',
+                        color: '#00A3F7',
+                        defaultSound: "true",
+                        defaultVibrateTimings: "true",
+                        ticker: "Pocketnet"
+                    }
+                },
+                apns: {
+                    payload: {
+                        aps: {
+                            sound: 'default',
+                            'content-available': '1'
+                        }
+                    }
+                }
+            };
+            var tokens = users?.filter?.(el=>!el?.settings?.isWeb).map(el=>el.token) || []
+
             if (tokens.length) {
+                message.notification = data.header;
                 for (let i = 0; i < tokens.length; i += 999) {
                     const maxSizeTokens = tokens.slice(i, 999);
-
-                    var message = {
-                        tokens: maxSizeTokens,
-                        data: {json: JSON.stringify(data)},
-                        android: {
-
-                            notification: {
-                                priority: "MAX",
-                                visibility: "PUBLIC",
-                                icon: 'notification_icon',
-                                color: '#00A3F7',
-                                defaultSound: "true",
-                                defaultVibrateTimings: "true",
-                                ticker: "Pocketnet"
-                            }
-                        },
-                        apns: {
-                            payload: {
-                                aps: {
-                                    sound: 'default',
-                                    'content-available': '1'
-                                }
-                            }
-                        }
-                    };
-                    if(!users?.settings?.isWeb){
-                        message.notification = header;
-                    }else{
-                        message.data = {...message.data, ...header}
-                        message.data.image = data?.info?.[3];
-                    }
+                    message.tokens = maxSizeTokens
                     return admin.messaging().sendMulticast(message).then((response) => {
                         for(const responseIndex in response.responses) {
-                            if(!response.responses[responseIndex].success && users[responseIndex]){
-                                    self.kit.revokeToken(users[responseIndex].token)
+                            if(!response.responses[responseIndex].success && tokens[responseIndex]){
+                                    self.kit.revokeToken(tokens[responseIndex])
                             }
                         }
                         return Promise.resolve(response)
@@ -391,6 +390,25 @@ var Firebase = function(p){
                     .catch((error) => {
                         return Promise.reject(error)
                     });
+                }
+            }
+
+            var tokensWeb = users?.filter?.(el=>el?.settings?.isWeb).map(el=>el.token) || []
+            if (tokensWeb.length) {
+                for(let i = 0; i < tokensWeb.length; i += 999) {
+                    const maxSizeTokens = tokensWeb.slice(i, 999);
+                    message.tokens = maxSizeTokens
+                    return admin.messaging().sendMulticast(message).then((response) => {
+                        for(const responseIndex in response.responses) {
+                            if(!response.responses[responseIndex].success && tokensWeb[responseIndex]){
+                                self.kit.revokeToken(tokensWeb[responseIndex])
+                            }
+                        }
+                        return Promise.resolve(response)
+                    })
+                        .catch((error) => {
+                            return Promise.reject(error)
+                        });
                 }
             }
         }
@@ -415,6 +433,13 @@ var Firebase = function(p){
         var users = getAllUsers()
 
         if (users?.length) self.send({data, users})
+    }
+
+    self.sendEvents = function(events){
+        for(const event of events) {
+            var users = getUsersByAddresses(event.addresses)
+            if (users?.length) self.send({data: event.notification, users})
+        }
     }
 
     self.init = function(p){

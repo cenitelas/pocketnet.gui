@@ -22973,11 +22973,13 @@ Platform = function (app, listofnodes) {
             },
 
             setToken: function (token, proxy) {
+                const settings = platform.sdk.usersettings.meta;
+                settings.isWeb = Boolean(!window.cordova)
                 return platform.app.api.fetchauth('firebase/set', {
                     device : device(),
                     token : token,
                     id : appid,
-                    settings: platform.sdk.usersettings.meta
+                    settings: settings
                 }, {
                     proxy : proxy
                 })

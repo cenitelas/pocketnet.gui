@@ -193,7 +193,6 @@ var Node = function(options, manager){
     }
 
     self.notification = function(block){
-        console.log('notification node')
         manager.notifications.addblock(block, self)
     }
 

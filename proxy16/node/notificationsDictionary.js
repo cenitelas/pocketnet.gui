@@ -1,5 +1,11 @@
-const NotificationsDictionary = (data) => {
+module.exports = (data = {user: "", amount: "", score: ""}) => {
     return {
+        boost: {
+            ru: {
+                title: `Повышение рейтинга Вашего комментария`,
+                body: `От пользователя ${data.user}`
+            }
+        },
         money: {
             ru: {
                 title: `Пополнение кошелька`,
@@ -33,6 +39,12 @@ const NotificationsDictionary = (data) => {
         comment: {
             ru: {
                 title: `Вам оставлен новый комментарий`,
+                body: `От пользователя ${data.user}`
+            }
+        },
+        privatecontent: {
+            ru: {
+                title: `Новая публикация`,
                 body: `От пользователя ${data.user}`
             }
         },

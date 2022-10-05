@@ -12,10 +12,11 @@ const messaging = firebase.messaging();
 const url = new URL(self.serviceWorker?.scriptURL || "");
 
 messaging.onBackgroundMessage(function(payload) {
-  const notificationTitle = payload?.data?.title;
+  const notification = payload?.data?.json ? JSON.parse(payload?.data?.json) : {};
+  const notificationTitle = notification?.header?.title;
   const notificationOptions = {
-    body: payload?.data?.body,
-    icon: payload?.data?.image || `${url.origin}/img/logo_color/blue_250.png`,
+    body: notification?.header?.body,
+    icon: notification?.image || `${url.origin}/img/logo_color/blue_250.png`,
   };
 
   return self.registration.showNotification(

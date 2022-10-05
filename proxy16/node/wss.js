@@ -130,8 +130,6 @@ var Wss = function(node, service){
                     return
                 }
 
-                console.log('data.msg', data.msg)
-
                 if (data.msg == 'new block' && service){
                 
                     emit('block', data)
