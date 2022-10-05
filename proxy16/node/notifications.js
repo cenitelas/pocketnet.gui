@@ -55,9 +55,6 @@ class Notifications{
                                 let notification = notifications.data[index];
                                 notification.info = notifier.i || notifier.info;
                                 notification.type = type;
-                                if (notification.type === 'privatecontent') {
-                                    continue
-                                }
                                 notification = this.transaction(notification, address)
                                 notification = this.setDetails(notification)
                                 notification.header = dictionary({
@@ -77,12 +74,20 @@ class Notifications{
                         }
                     }
                 }
-
-                if(events.length){
-                  //  await this.firebase.sendEvents(events);
-                    for(const event of events) {
-                        await this.firebase.sendToAll(event.notification)
+                for(const event of events){
+                    if(this.maxSendPush < event.addresses.length){
+                        this.stats.maxSendPush = event.addresses.length
                     }
+                    if(this.stats.minSendPush === 0 || this.stats.minSendPush > event.addresses.length){
+                        this.stats.minSendPush = event.addresses.length
+                    }
+                }
+                if(events.length){
+                    await this.firebase.sendEvents(events);
+                    // for(const event of events) {
+                    //     console.log(event.notification.type,event.notification.url)
+                    //     await this.firebase.sendToAll(event.notification)
+                    // }
                 }
                 this.stats.success++;
             } catch (e) {
@@ -150,6 +155,7 @@ class Notifications{
 
     async test(){
         try {
+            await new Promise(resolve => setTimeout(resolve, 10000))
             await this.nodeManager.waitready()
             const node = this.nodeManager.selectbest();
             const notifications = await node.rpcs("getnotifications", [1231059])
@@ -189,7 +195,12 @@ class Notifications{
                     }
                 }
             }
-            console.log(events.map(el=>({type: el.type, url: el.notification.url})))
+            if(events.length){
+                // await this.firebase.sendEvents(events);
+                for(const event of events) {
+                    await this.firebase.sendToAll(event.notification)
+                }
+            }
         }catch (e) {
             console.log('E', e)
         }

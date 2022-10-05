@@ -17,6 +17,7 @@ messaging.onBackgroundMessage(function(payload) {
   const notificationOptions = {
     body: notification?.header?.body,
     icon: notification?.image || `${url.origin}/img/logo_color/blue_250.png`,
+    data: notification,
   };
 
   return self.registration.showNotification(
@@ -26,7 +27,7 @@ messaging.onBackgroundMessage(function(payload) {
 });
 
 self.addEventListener('notificationclick', function(event) {
-  const notificationUrl = `${url.origin}/userpage?id=notifications&report=notifications`
+  const notificationUrl = url.origin + (event?.notification?.data?.url || `/userpage?id=notifications&report=notifications`)
   event.notification.close();
   event.waitUntil(clients.matchAll({
     type: 'window',
