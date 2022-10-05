@@ -272,15 +272,15 @@ class Notifications{
                 case 'winPostref':
                     return "/userpage?id=wallet"
                 case 'comment':
-                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}`
+                    return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}`
                 case 'privatecontent':
                     return `/index?s=${content?.rootTxHash || ""}`
                 case 'commentDonate':
-                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}`
+                    return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}`
                 case 'answer':
-                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}&parentid=${content.commentParentId || ""}`
+                    return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}&parentid=${content.commentParentId || ""}`
                 case 'answerDonate':
-                    return `/index?s=${content?.postHash || ""}&commentid=${content.rootTxHash || ""}&parentid=${content.commentParentId || ""}`
+                    return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}&parentid=${content.commentParentId || ""}`
                 case 'subscriber':
                     return ""
                 case 'contentscore':
