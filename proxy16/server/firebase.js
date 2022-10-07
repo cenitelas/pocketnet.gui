@@ -87,7 +87,7 @@ var Firebase = function(p){
 
     var getUsersByAddresses = function(addresses){
         return _.filter(self.users, function(user){
-            return addresses.some(user.address)
+            return addresses.some(el=>el===user.address)
         })
     }
 
@@ -382,7 +382,7 @@ var Firebase = function(p){
                     return admin.messaging().sendMulticast(message).then((response) => {
                         for(const responseIndex in response.responses) {
                             if(!response.responses[responseIndex].success && tokens[responseIndex]){
-                                    self.kit.revokeToken(tokens[responseIndex])
+                                    // self.kit.revokeToken(tokens[responseIndex])
                             }
                         }
                         return Promise.resolve(response)
@@ -401,7 +401,7 @@ var Firebase = function(p){
                     return admin.messaging().sendMulticast(message).then((response) => {
                         for(const responseIndex in response.responses) {
                             if(!response.responses[responseIndex].success && tokensWeb[responseIndex]){
-                                self.kit.revokeToken(tokensWeb[responseIndex])
+                                // self.kit.revokeToken(tokensWeb[responseIndex])
                             }
                         }
                         return Promise.resolve(response)

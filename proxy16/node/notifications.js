@@ -131,7 +131,7 @@ class Notifications{
 
     addblock(block, node){
         if(node.version && f.numfromreleasestring(node.version) > 0.2000025 && this.height < block.height){
-
+            console.log(this?.firebase?.info())
             if(!this.firebase.inited) {
                 console.log("WARNING FIREBASE")
                 return
@@ -196,10 +196,11 @@ class Notifications{
                 }
             }
             if(events.length){
-                // await this.firebase.sendEvents(events);
-                for(const event of events) {
-                    await this.firebase.sendToAll(event.notification)
-                }
+                await this.firebase.sendEvents(events);
+                // for(const event of events) {
+                //     console.log(event.notification.url)
+                //     await this.firebase.sendToAll(event.notification)
+                // }
             }
         }catch (e) {
             console.log('E', e)
@@ -274,7 +275,7 @@ class Notifications{
                 case 'comment':
                     return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}`
                 case 'privatecontent':
-                    return `/index?s=${content?.rootTxHash || ""}`
+                    return `/index?s=${notification?.rootTxHash || ""}`
                 case 'commentDonate':
                     return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}`
                 case 'answer':
@@ -286,7 +287,7 @@ class Notifications{
                 case 'contentscore':
                     return `/index?s=${content?.rootTxHash || ""}`
                 case 'commentscore':
-                    return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}`
+                    return `/index?s=${content.postHash || ""}&commentid=${content.rootTxHash || ""}`
                 default:
                     return ""
         }
