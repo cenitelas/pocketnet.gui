@@ -279,9 +279,9 @@ class Notifications{
                 case 'commentDonate':
                     return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}`
                 case 'answer':
-                    return `/index?s=${notification?.postHash || ""}&commentid=${content.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
+                    return `/index?s=${notification?.postHash || ""}&commentid=${notification.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
                 case 'answerDonate':
-                    return `/index?s=${notification?.postHash || ""}&commentid=${content.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
+                    return `/index?s=${notification?.postHash || ""}&commentid=${notification.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
                 case 'subscriber':
                     return ""
                 case 'contentscore':
