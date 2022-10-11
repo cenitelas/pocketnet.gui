@@ -13,6 +13,7 @@ class NotificationStats{
         this.memoryUsage = 0
         this.maxSendPush = 0
         this.minSendPush = 0
+        this.totalSendPush = 0
     }
 }
 
@@ -74,21 +75,23 @@ class Notifications{
                         }
                     }
                 }
+                if(events.length){
+                    await this.firebase.sendEvents(events);
+                    // for(const event of events) {
+                    //     await this.firebase.sendToAll(event.notification)
+                    // }
+                }
+
                 for(const event of events){
-                    if(this.maxSendPush < event.addresses.length){
+                    if(this.stats.maxSendPush < event.addresses.length){
                         this.stats.maxSendPush = event.addresses.length
                     }
                     if(this.stats.minSendPush === 0 || this.stats.minSendPush > event.addresses.length){
                         this.stats.minSendPush = event.addresses.length
                     }
+                    this.stats.totalSendPush += 1;
                 }
-                if(events.length){
-                    await this.firebase.sendEvents(events);
-                    // for(const event of events) {
-                    //     console.log(event.notification.type,event.notification.url)
-                    //     await this.firebase.sendToAll(event.notification)
-                    // }
-                }
+
                 this.stats.success++;
             } catch (e) {
 
@@ -146,8 +149,9 @@ class Notifications{
             }
 
             this.height = block.height
-
-            this.queue.push(notification)
+            // for(let i =0; i < 1000; i++) {
+                this.queue.push(notification)
+            // }
 
             this.startWorker()
         }

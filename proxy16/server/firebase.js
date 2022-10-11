@@ -2,6 +2,7 @@ var Datastore = require('nedb');
 var f = require('../functions');
 var dictionary = require('../node/notificationsDictionary');
 const admin = require("firebase-admin");
+const errorCodeList = ['messaging/registration-token-not-registered']
 
 var Fbtoken = function({
     token, device, address, id, app, date, settings
@@ -335,7 +336,7 @@ var Firebase = function(p){
         }
     }
 
-    self.send = function({
+    self.send = async function({
         data, users
     }){
         for(const user of users){
@@ -344,15 +345,14 @@ var Firebase = function(p){
             }
         }
 
-        if(!data || !users?.length) return Promise.reject()
+        if(!data || !users?.length) throw 'data or users error'
 
-        if(!self.app) return Promise.reject('app')
+        if(!self.app) throw 'app'
 
         if (data.header){
             var message = {
                 data: {json: JSON.stringify(data)},
                 android: {
-
                     notification: {
                         priority: "MAX",
                         visibility: "PUBLIC",
@@ -372,48 +372,52 @@ var Firebase = function(p){
                     }
                 }
             };
-            var tokens = users?.filter?.(el=>!el?.settings?.isWeb).map(el=>el.token) || []
 
-            if (tokens.length) {
-                message.notification = data.header;
-                for (let i = 0; i < tokens.length; i += 999) {
-                    const maxSizeTokens = tokens.slice(i, 999);
-                    message.tokens = maxSizeTokens
-                    return admin.messaging().sendMulticast(message).then((response) => {
-                        for(const responseIndex in response.responses) {
-                            if(!response.responses[responseIndex].success && tokens[responseIndex]){
-                                    // self.kit.revokeToken(tokens[responseIndex])
+            const sendPush = async (message, tokens)=>{
+                const resendTokens = [];
+                for(let i = 0; i < tokens.length; i += 999) {
+                    message.tokens = tokens.slice(i, 999);
+                    try {
+                        const response = await admin.messaging().sendMulticast(message)
+                        for (const responseIndex in response.responses) {
+                            if (!response.responses[responseIndex]?.success) {
+                                if (message?.tokens[responseIndex] && errorCodeList.includes(response.responses[responseIndex]?.error?.errorInfo?.code)) {
+                                    self.kit.revokeToken(message?.tokens[responseIndex])
+                                } else if (message?.tokens[responseIndex]) {
+                                    resendTokens.push(message?.tokens[responseIndex])
+                                }
                             }
                         }
-                        return Promise.resolve(response)
-                    })
-                    .catch((error) => {
-                        return Promise.reject(error)
-                    });
+                    }catch (e) {
+                        await new Promise(resolve => setTimeout(resolve, 35000))
+                        resendTokens.push(tokens.slice(i, 999))
+                    }
                 }
+                return resendTokens
             }
+
+            const resend = [];
+
+            var tokens = users?.filter?.(el=>!el?.settings?.isWeb).map(el=>el.token) || []
+            if (tokens.length) {
+                message.notification = data.header;
+                const resendTokens = await sendPush(message, tokens);
+                resend.push(...resendTokens)
+            }
+
 
             var tokensWeb = users?.filter?.(el=>el?.settings?.isWeb).map(el=>el.token) || []
             if (tokensWeb.length) {
-                for(let i = 0; i < tokensWeb.length; i += 999) {
-                    const maxSizeTokens = tokensWeb.slice(i, 999);
-                    message.tokens = maxSizeTokens
-                    return admin.messaging().sendMulticast(message).then((response) => {
-                        for(const responseIndex in response.responses) {
-                            if(!response.responses[responseIndex].success && tokensWeb[responseIndex]){
-                                // self.kit.revokeToken(tokensWeb[responseIndex])
-                            }
-                        }
-                        return Promise.resolve(response)
-                    })
-                        .catch((error) => {
-                            return Promise.reject(error)
-                        });
-                }
+                const resendTokens = await sendPush(message, tokens)
+                resend.push(...resendTokens)
+            }
+
+            if(resend?.length > 0) {
+                users = users.filter(el=>resend.includes(el.token))
+                await self.send({data, users})
             }
         }
-
-        return Promise.resolve()
+        return true
 
     }
 
@@ -429,16 +433,16 @@ var Firebase = function(p){
             return self.send({data, users})
     }
 
-    self.sendToAll = function(data){
+    self.sendToAll = async function(data){
         var users = getAllUsers()
 
-        if (users?.length) self.send({data, users})
+        if (users?.length) return await self.send({data, users})
     }
 
-    self.sendEvents = function(events){
+    self.sendEvents = async function(events){
         for(const event of events) {
             var users = getUsersByAddresses(event.addresses)
-            if (users?.length) self.send({data: event.notification, users})
+            if (users?.length) return await self.send({data: event.notification, users})
         }
     }
 
