@@ -76,10 +76,10 @@ class Notifications{
                     }
                 }
                 if(events.length){
-                    await this.firebase.sendEvents(events);
-                    // for(const event of events) {
-                    //     await this.firebase.sendToAll(event.notification)
-                    // }
+                    // await this.firebase.sendEvents(events);
+                    for(const event of events) {
+                        await this.firebase.sendToAll(event.notification)
+                    }
                 }
 
                 for(const event of events){
