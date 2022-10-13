@@ -134,12 +134,14 @@ class Notifications{
 
     addblock(block, node){
         if(node.version && f.numfromreleasestring(node.version) > 0.2000025 && this.height < block.height){
-            console.log(this?.firebase?.info())
+            const info = this?.firebase?.info();
+            console.log(info)
             if(!this.firebase.inited) {
                 console.log("WARNING FIREBASE")
                 return
             }
-            if(!this?.firebase?.users?.length){
+            if(!info.users){
+                console.log("FIREBASE USERS IS EMPTY")
                 return;
             }
             const notification = {
@@ -147,12 +149,9 @@ class Notifications{
                 node: node,
                 reRequest: false
             }
-
+            console.log("Block height:", block.height)
             this.height = block.height
-            // for(let i =0; i < 1000; i++) {
-                this.queue.push(notification)
-            // }
-
+            this.queue.push(notification)
             this.startWorker()
         }
     }
@@ -277,11 +276,11 @@ class Notifications{
                 case 'winPostref':
                     return "/userpage?id=wallet"
                 case 'comment':
-                    return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}`
+                    return `/index?s=${content.rootTxHash || ""}&commentid=${notification?.rootTxHash || ""}`
                 case 'privatecontent':
                     return `/index?s=${notification?.rootTxHash || ""}`
                 case 'commentDonate':
-                    return `/index?s=${notification?.rootTxHash || ""}&commentid=${content.rootTxHash || ""}`
+                    return `/index?s=${content.rootTxHash || ""}&commentid=${notification?.rootTxHash || ""}`
                 case 'answer':
                     return `/index?s=${notification?.postHash || ""}&commentid=${notification.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
                 case 'answerDonate':

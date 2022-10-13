@@ -382,13 +382,16 @@ var Firebase = function(p){
                         for (const responseIndex in response.responses) {
                             if (!response.responses[responseIndex]?.success) {
                                 if (message?.tokens[responseIndex] && errorCodeList.includes(response.responses[responseIndex]?.error?.errorInfo?.code)) {
+                                    console.log("Token is inactive, delete user", message?.tokens[responseIndex])
                                     self.kit.revokeToken(message?.tokens[responseIndex])
                                 } else if (message?.tokens[responseIndex]) {
+                                    console.log("Resend push after 35 seconds, because token is temporarily blocked by firebase:", message?.tokens[responseIndex])
                                     resendTokens.push(message?.tokens[responseIndex])
                                 }
                             }
                         }
                     }catch (e) {
+                        console.log("Push notifications sending limit exceeded, waiting 35 seconds");
                         await new Promise(resolve => setTimeout(resolve, 35000))
                         resendTokens.push(tokens.slice(i, 999))
                     }
@@ -413,8 +416,8 @@ var Firebase = function(p){
             }
 
             if(resend?.length > 0) {
-                users = users.filter(el=>resend.includes(el.token))
-                await self.send({data, users})
+                await new Promise(resolve => setTimeout(resolve, 35000))
+                self.send({data, users: users.filter(el=>resend.includes(el.token))})
             }
         }
         return true
