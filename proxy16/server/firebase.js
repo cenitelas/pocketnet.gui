@@ -43,6 +43,7 @@ var Firebase = function(p){
     
     self.users = [];
     self.inited = false;
+    self.useNotifications = false;
 
     var loaddb = function(){
 
@@ -306,31 +307,31 @@ var Firebase = function(p){
     self.checkPermissions = function (type, settings) {
         switch (type) {
             case 'money':
-                return Boolean(settings?.transactions.value)
+                return settings?.transactions
             case 'winPost':
-                return Boolean(settings?.win.value)
+                return settings?.win
             case 'winComment':
-                return Boolean(settings?.win.value)
+                return settings?.win
             case 'winCommentref':
-                return Boolean(settings?.win.value)
+                return settings?.win
             case 'winPostref':
-                return Boolean(settings?.win.value)
+                return settings?.win
             case 'comment':
-                return Boolean(settings?.comments.value)
+                return settings?.comments
             case 'privatecontent':
-                return Boolean(settings?.comments.value)
+                return settings?.comments
             case 'commentDonate':
-                return Boolean(settings?.transactions.value)
+                return settings?.transactions
             case 'answer':
-                return Boolean(settings?.answers.value)
+                return settings?.answers
             case 'answerDonate':
-                return Boolean(settings?.transactions.value)
+                return settings?.transactions
             case 'subscriber':
-                return Boolean(settings?.followers.value)
+                return settings?.followers
             case 'contentscore':
                 return true
             case 'commentscore':
-                return Boolean(settings?.commentScore.value)
+                return settings?.commentScore
             default:
                 return true
         }
@@ -382,16 +383,16 @@ var Firebase = function(p){
                         for (const responseIndex in response.responses) {
                             if (!response.responses[responseIndex]?.success) {
                                 if (message?.tokens[responseIndex] && errorCodeList.includes(response.responses[responseIndex]?.error?.errorInfo?.code)) {
-                                    console.log("Token is inactive, delete user", message?.tokens[responseIndex])
+                                //    console.log("Token is inactive, delete user", message?.tokens[responseIndex])
                                     self.kit.revokeToken(message?.tokens[responseIndex])
                                 } else if (message?.tokens[responseIndex]) {
-                                    console.log("Resend push after 35 seconds, because token is temporarily blocked by firebase:", message?.tokens[responseIndex])
+                                   // console.log("Resend push after 35 seconds, because token is temporarily blocked by firebase:", message?.tokens[responseIndex])
                                     resendTokens.push(message?.tokens[responseIndex])
                                 }
                             }
                         }
                     }catch (e) {
-                        console.log("Push notifications sending limit exceeded, waiting 35 seconds");
+                      //  console.log("Push notifications sending limit exceeded, waiting 35 seconds");
                         await new Promise(resolve => setTimeout(resolve, 35000))
                         resendTokens.push(tokens.slice(i, 999))
                     }
@@ -507,7 +508,8 @@ var Firebase = function(p){
     self.info = function(){
         return {
             inited : self.inited,
-            users : self.users.length
+            users : self.users.length,
+            useNotifications: self.useNotifications,
         }
     }
 

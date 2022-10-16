@@ -22917,15 +22917,19 @@ Platform = function (app, listofnodes) {
 
         }
 
-        self.settings = function(proxy){
-            if(!proxy){
-                proxy = platform.app.api.get.current()
+        self.settings = async function(current){
+            if(!current){
+                for(const proxy of platform.app.api.get.proxies()){
+                    const {info} = await proxy.get.info();
+                    if(info.firebase.useNotifications && info.firebase.inited){
+                        current = proxy;
+                    }
+                }
             }
+            if(!current) return Promise.reject('proxy')
 
-            if(!proxy) return Promise.reject('proxy')
-
-            return self.api.checkProxy(proxy).then(r => {
-                return  self.api.setSettings(proxy)
+            return self.api.checkProxy(current).then(r => {
+                return  self.api.setSettings(current)
             }).catch(e => {
                 console.log(e)
                 return Promise.resolve()
@@ -22979,7 +22983,7 @@ Platform = function (app, listofnodes) {
                     device : device(),
                     token : token,
                     id : appid,
-                    settings: settings
+                    settings: self.getSettings()
                 }, {
                     proxy : proxy
                 })
@@ -22991,7 +22995,7 @@ Platform = function (app, listofnodes) {
                 settings.isWeb = Boolean(!window.cordova)
                 return platform.app.api.fetchauth('firebase/settings', {
                     device : device(),
-                    settings: settings
+                    settings: self.getSettings()
                 }, {
                     proxy : proxy
                 })
@@ -22999,6 +23003,15 @@ Platform = function (app, listofnodes) {
             }
         }
 
+        self.getSettings = function (){
+            const data = {}
+            const settings = platform.sdk.usersettings.meta;
+            data.isWeb = Boolean(!window.cordova)
+            for(const key in settings){
+                data[key] = settings[key].value;
+            }
+            return data;
+        }
 
         self.get = function (clbk) {
             if (using) {
@@ -23124,15 +23137,51 @@ Platform = function (app, listofnodes) {
 
                     if (data.tap) {
 
-                        platform.ws.destroyMessages()
+                        platform.ws.destroyMessages();
                         const body = JSON.parse(data?.json);
-                        platform.app.nav.api.load({
-                            open: true,
-                            href: body?.url || 'notification',
-                            history: true,
-                            handler: true
-                        })
-                        return
+                        body.url = body?.url.replace("/index", "");
+                        if(body.url) {
+                            if(body.url === "/userpage?id=wallet"){
+                                platform.app.nav.api.go({
+                                    open: true,
+                                    href: 'wallet',
+                                    history: true,
+                                    inWnd: true,
+                                    essenseData: {
+                                    },
+                                });
+                            }else {
+                                const params = new URLSearchParams(body.url);
+                                platform.app.nav.api.load({
+                                    open: true,
+                                    href: 'post?s=' + params.get('s'),
+                                    inWnd: true,
+                                    history: true,
+                                    clbk: function (d, p) {
+                                        app.nav.wnds['post'] = p
+                                    },
+
+                                    essenseData: {
+                                        share: params.get('s'),
+
+                                        reply: {
+                                            answerid: params.get('commentid') || "",
+                                            parentid: params.get('parentid') || "",
+                                            noaction: true
+                                        }
+                                    }
+                                })
+                            }
+                        }else{
+                            platform.app.nav.api.go({
+                                open : true,
+                                href : 'notifications',
+                                inWnd : true,
+                                history : true,
+                                essenseData : {
+                                }
+                            })
+                        }
                     } else {
 
                         if (typeof cordova != 'undefined') {
@@ -23165,12 +23214,17 @@ Platform = function (app, listofnodes) {
             }
         }
 
-        var prepareclbk = function(token){
-            console.log(token)
+        var prepareclbk = async function(token){
             if (token){
-                var proxy = platform.app.api.get.current()
-                if (proxy){
-                    self.set(proxy.id).catch(e => {
+                let current = null;
+                for(const proxy of platform.app.api.get.proxies()){
+                    const {info} = await proxy.get.info();
+                    if(info.firebase.useNotifications && info.firebase.inited){
+                        current = proxy;
+                    }
+                }
+                if (current){
+                    self.set(current.id).catch(e => {
                         console.log("error", e)
                     })
                 }

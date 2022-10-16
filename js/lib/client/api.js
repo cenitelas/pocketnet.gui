@@ -1032,7 +1032,6 @@ var Api = function(app){
         return getproxy(options.proxy).then(proxy => {
 
             requestto = proxy.id
-
             return proxy[method](path, data)
 
         }).then(r => {

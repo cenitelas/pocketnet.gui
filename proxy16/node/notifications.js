@@ -29,6 +29,7 @@ class Notifications{
         this.queue = []
         this.height = 0
         this.stats = new NotificationStats()
+        firebase.useNotifications = true
         return this;
     }
 
@@ -276,21 +277,42 @@ class Notifications{
                 case 'winPostref':
                     return "/userpage?id=wallet"
                 case 'comment':
-                    return `/index?s=${content.rootTxHash || ""}&commentid=${notification?.rootTxHash || ""}`
+                    if(content.rootTxHash && notification?.rootTxHash) {
+                        return `/index?s=${content.rootTxHash || ""}&commentid=${notification?.rootTxHash || ""}`
+                    }
+                    return ""
                 case 'privatecontent':
-                    return `/index?s=${notification?.rootTxHash || ""}`
+                    if(notification?.rootTxHash) {
+                        return `/index?s=${notification?.rootTxHash || ""}`
+                    }
+                    return ""
                 case 'commentDonate':
-                    return `/index?s=${content.rootTxHash || ""}&commentid=${notification?.rootTxHash || ""}`
+                    if(content.rootTxHash && notification?.rootTxHash ) {
+                        return `/index?s=${content.rootTxHash || ""}&commentid=${notification?.rootTxHash || ""}`
+                    }
+                    return ""
                 case 'answer':
-                    return `/index?s=${notification?.postHash || ""}&commentid=${notification.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
+                    if(notification?.postHash && notification.rootTxHash && notification.commentParentId) {
+                        return `/index?s=${notification?.postHash || ""}&commentid=${notification.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
+                    }
+                    return ""
                 case 'answerDonate':
-                    return `/index?s=${notification?.postHash || ""}&commentid=${notification.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
+                    if(notification?.postHash && notification.rootTxHash && notification.commentParentId) {
+                        return `/index?s=${notification?.postHash || ""}&commentid=${notification.rootTxHash || ""}&parentid=${notification.commentParentId || ""}`
+                    }
+                    return ""
                 case 'subscriber':
                     return ""
                 case 'contentscore':
-                    return `/index?s=${content?.rootTxHash || ""}`
+                    if(content?.rootTxHash) {
+                        return `/index?s=${content?.rootTxHash || ""}`
+                    }
+                    return ""
                 case 'commentscore':
-                    return `/index?s=${content.postHash || ""}&commentid=${content.rootTxHash || ""}`
+                    if(content.postHash && content.rootTxHash) {
+                        return `/index?s=${content.postHash || ""}&commentid=${content.rootTxHash || ""}`
+                    }
+                    return ""
                 default:
                     return ""
         }
