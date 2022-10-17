@@ -46,7 +46,7 @@ if(!_Node)
 		// },
 
 		{
-			host : '6.pocketnet.app',
+			host : 'pre.pocketnet.app',
 			port : 8899,
 			wss : 8099
 		}
@@ -58,7 +58,7 @@ if(!_Node)
 
 	if (window.testpocketnet){
 		_listofproxies = [{
-			host : 'test.pocketnet.app',
+			host : 'pre.pocketnet.app',
 			port : 8899,
 			wss : 8099
 	    }]
@@ -69,7 +69,7 @@ if(!_Node)
 	if (window.location.host === 'pre.pocketnet.app') {
 		_listofproxies = [
 			{
-				host : '6.pocketnet.app',
+				host : 'pre.pocketnet.app',
 				port : 8899,
 				wss : 8099
 			},
