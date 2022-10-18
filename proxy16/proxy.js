@@ -2075,7 +2075,7 @@ var Proxy = function (settings, manage, test, logger, reverseproxy) {
 						data: {
 							time: f.now(),
 							session : self.session,
-							v : '0808',
+							v : '0809',
 							node : node || '',
 							height : height || 0
 						},
