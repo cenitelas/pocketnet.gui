@@ -73,11 +73,6 @@ if(!_Node)
 				port : 8899,
 				wss : 8099
 			},
-			{
-				host : 'pre.pocketnet.app',
-				port : 8899,
-				wss : 8099
-			}
 		];
 
 	}
